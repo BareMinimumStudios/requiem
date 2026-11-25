@@ -4,6 +4,6 @@
   "package": "dev.pokesmells.requiem.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": ["ServerPlayerMixin", "ServerGamePacketListenerMixin"],
-  "client": ["CameraMixin", "ReceivingLevelScreenMixin", "SoundEngineMixin"],
+  "client": ["CameraMixin", "ReceivingLevelScreenMixin", "SoundEngineMixin", "RecapCaptureMixin"],
   "injectors": { "defaultRequire": 1 }
 }

@@ -32,6 +32,7 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var muteCinematics = false
     @NonSync var plainInterface = false
     @NonSync var showLivesRemaining = false
+    @NonSync var showLastMoments = true
     @NonSync var title = "The Between"
     @NonSync var subtitle = "Beyond the silence, the world awaits you once more."
     @NonSync var returnText = "Return to Existence"

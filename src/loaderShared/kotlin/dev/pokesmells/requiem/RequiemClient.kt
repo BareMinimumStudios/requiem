@@ -46,6 +46,7 @@ object RequiemClient {
 
     fun tick() {
         val minecraft = Minecraft.getInstance()
+        RequiemRecap.tick(minecraft)
         advancePresentation(minecraft)
         val frame = (minecraft.screen as? BetweenScreen)?.warpAudioFrame()
             ?: (minecraft.screen as? SpectatorFadeScreen)?.audioFrame()
@@ -73,6 +74,7 @@ object RequiemClient {
         }
         if (minecraft.level == null || minecraft.player == null || minecraft.screen is ReceivingLevelScreen) return
         pending = null
+        RequiemRecap.present(minecraft, next.payload)
         val current = handoff
         val starClock = current?.let { it.screen.starClockAtHandoff(it.ticks.toFloat()) } ?: 0f
         handoff = null

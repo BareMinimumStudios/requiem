@@ -208,6 +208,7 @@ class BetweenScreen(
             it.visible = controls > 0.05f
             it.setAlpha(controls)
         }
+        if (isTransition) RequiemRecap.render(graphics, view.transaction, clock, timing.revealStart)
         if (!isTransition && controls > 0.05f) {
             val textColor = tinted(config.textColor, controls)
             val pose = graphics.pose()

@@ -47,6 +47,12 @@ Reduced motion uses instant button highlights, holds
 particles still and uses a short fade with no camera motion. A world can
 enable the first-join sequence independently of its death rules.
 
+When `showLastMoments` is enabled, the return cinematic shows up to three
+recent first-person world frames before the reveal. Their feathered edges
+blend into the star field. Each is at most
+256 pixels on its longest edge. Frames stay in client memory. Gameplay
+interface elements such as the HUD are excluded.
+
 ## Client audio
 
 Use `buttonHoverSound`, `buttonClickSound`, and `warpSound` for sound-event IDs.
