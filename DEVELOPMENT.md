@@ -57,7 +57,8 @@ interface elements such as the HUD are excluded.
 
 Use `buttonHoverSound`, `buttonClickSound`, and `warpSound` for sound-event IDs.
 Each cue has a separate volume from 0 to 1. An empty ID silences that cue.
-The warp loop layers sustained harmonics and soft bell tones. It begins
+The warp loop layers a low rumble, a grainy rush and reverberant overtones.
+It begins
 quietly and swells as the stars stretch into lightspeed, rising from
 `warpStartPitch` toward `warpPeakPitch`. The fade blends into world audio.
 `warpTailTicks` controls the trail after the reveal. It defaults to 28 ticks.
