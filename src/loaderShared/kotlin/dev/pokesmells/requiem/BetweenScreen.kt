@@ -30,6 +30,7 @@ class BetweenScreen(
     private var livesLabel: Component? = null
     private val reducedMotion = !config.playCinematics || config.reducedMotion || config.plainInterface
     private val timing = CinematicTiming.forSettings(reducedMotion, config.warpTicks, config.revealTicks)
+    private val dialogueTicks = if (!isTransition && !reducedMotion && config.playDecisionDialogue) 60 else 0
     private val twinkleHoldTicks = config.twinkleHoldTicks.coerceIn(0, 80)
 
     private fun sceneClock(partialTick: Float): Float = (age - 1).coerceAtLeast(0) + partialTick.coerceIn(0f, 1f)
@@ -149,6 +150,10 @@ class BetweenScreen(
     }
 
     private fun addAction(button: Button) {
+        if (age < dialogueTicks) {
+            button.visible = false
+            button.active = false
+        }
         actionButtons.add(addRenderableWidget(button))
     }
 
@@ -197,7 +202,7 @@ class BetweenScreen(
         val darkness = if (isTransition) 1f - reveal else emergence
         val flightTicks = if (isTransition && !reducedMotion) clock else null
         val controls = if (isTransition) 1f - reveal else
-            (if (reducedMotion) 1f else smoothStep((clock - 4f) / 12f)) * (1f - windup)
+            (if (reducedMotion) 1f else smoothStep((clock - dialogueTicks - 4f) / 12f)) * (1f - windup)
 
         graphics.fillGradient(0, 0, width, height, tinted(0x03040c, darkness), tinted(config.skyColor, darkness))
         if (!config.plainInterface) {
@@ -206,9 +211,11 @@ class BetweenScreen(
         }
         actionButtons.forEach {
             it.visible = controls > 0.05f
+            it.active = it.visible && !choiceSent && returnStarted == null
             it.setAlpha(controls)
         }
         if (isTransition) RequiemRecap.render(graphics, view.transaction, clock, timing.revealStart)
+        if (clock < dialogueTicks) drawDialogue(graphics, clock)
         if (!isTransition && controls > 0.05f) {
             val textColor = tinted(config.textColor, controls)
             val pose = graphics.pose()
@@ -223,6 +230,21 @@ class BetweenScreen(
             livesLabel?.let { graphics.drawCenteredString(font, it, width / 2, livesY, textColor) }
         }
         super.render(graphics, mouseX, mouseY, partialTick)
+    }
+
+    private fun drawDialogue(graphics: GuiGraphics, clock: Float) {
+        val (start, end, text) = when {
+            clock < 14f -> Triple(0f, 14f, "…")
+            clock < 29f -> Triple(14f, 29f, "…")
+            else -> Triple(29f, dialogueTicks.toFloat(), config.disorientedText)
+        }
+        val alpha = smoothStep((clock - start) / 4f) * smoothStep((end - clock) / 5f)
+        if (alpha < 0.025f) return
+        val lines = font.split(Component.literal(text), (width - 24).coerceAtLeast(1))
+        val top = (height - lines.size * font.lineHeight) / 2
+        lines.forEachIndexed { index, line ->
+            graphics.drawCenteredString(font, line, width / 2, top + index * font.lineHeight, tinted(config.textColor, alpha))
+        }
     }
 
     override fun renderBackground(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) = Unit

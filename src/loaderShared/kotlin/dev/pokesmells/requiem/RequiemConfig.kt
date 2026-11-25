@@ -34,10 +34,12 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var showLivesRemaining = false
     @NonSync var showLastMoments = true
     @NonSync var title = "The Between"
-    @NonSync var subtitle = "Beyond the silence, the world awaits you once more."
-    @NonSync var returnText = "Return to Existence"
-    @NonSync var finalText = "Embrace Eternity"
-    @NonSync var deferText = "Choose Later"
+    @NonSync var playDecisionDialogue = true
+    @NonSync var disorientedText = "Where… am I?"
+    @NonSync var subtitle = "What will you do?"
+    @NonSync var returnText = "Will you return to existence?"
+    @NonSync var finalText = "Will you embrace eternity?"
+    @NonSync var deferText = "Would you rather decide later?"
     @NonSync var skyColor = 0x14152D
     @NonSync var starColor = 0xA9BBFF
     @NonSync var accentColor = 0x819BEF
