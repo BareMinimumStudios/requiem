@@ -235,8 +235,10 @@ class BetweenScreen(
     private fun drawDialogue(graphics: GuiGraphics, clock: Float) {
         val (start, end, text) = when {
             clock < 14f -> Triple(0f, 14f, "…")
-            clock < 29f -> Triple(14f, 29f, "…")
-            else -> Triple(29f, dialogueTicks.toFloat(), config.disorientedText)
+            clock < 19f -> return
+            clock < 31f -> Triple(19f, 31f, "…")
+            clock < 36f -> return
+            else -> Triple(36f, dialogueTicks.toFloat(), config.disorientedText)
         }
         val alpha = smoothStep((clock - start) / 4f) * smoothStep((end - clock) / 5f)
         if (alpha < 0.025f) return
