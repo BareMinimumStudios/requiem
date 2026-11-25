@@ -42,6 +42,21 @@ class MortalityTest {
     }
 
     @Test
+    fun deferredDecisionKeepsTheOriginalRulesAndGameMode() {
+        val rules = MortalityRules(mode = MortalityMode.LIMITED, defaultLives = 3)
+        val record = rules.begin(
+            player, "Alex", DeathCause.MOB, PlayerRecord(), previousGameMode = "adventure",
+        )
+        val death = assertNotNull(record.pending)
+        val deferred = record.decide(death.id, Decision.DEFER)
+        val changedRules = rules.copy(mode = MortalityMode.HARDCORE, finalPolicy = FinalPolicy.BAN)
+        val reopened = changedRules.begin(player, "Alex", DeathCause.PLAYER, deferred)
+        assertEquals(death, reopened.pending)
+        assertEquals("adventure", reopened.pending?.previousGameMode)
+        assertEquals(2, reopened.decide(death.id, Decision.RETURN).remainingLives)
+    }
+
+    @Test
     fun hardcoreRequiresFinalDecision() {
         val rules = MortalityRules(mode = MortalityMode.HARDCORE, finalPolicy = FinalPolicy.LIMBO)
         val deceased = rules.begin(player, "Alex", DeathCause.MOB, PlayerRecord())

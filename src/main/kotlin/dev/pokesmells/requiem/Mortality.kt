@@ -27,6 +27,7 @@ data class MortalityRules(
         cause: DeathCause,
         previous: PlayerRecord,
         transaction: UUID = UUID.randomUUID(),
+        previousGameMode: String? = null,
     ): PlayerRecord {
         if (previous.pending != null || previous.finalPolicy != null) return previous
         val override = overrides[player.toString()] ?: overrides[name.lowercase(java.util.Locale.ROOT)]
@@ -42,7 +43,7 @@ data class MortalityRules(
             remainingLives = if (effectiveMode == MortalityMode.LIMITED) remaining else previous.remainingLives,
             pending = PendingDeath(
                 transaction, cause, remaining, voluntaryFinalDeath, deferredDecision, finalPolicy,
-                respawnMode, automaticDelaySeconds.coerceIn(0, 600),
+                respawnMode, automaticDelaySeconds.coerceIn(0, 600), previousGameMode,
             ),
         )
     }
@@ -57,6 +58,7 @@ data class PendingDeath(
     val policy: FinalPolicy,
     val respawnMode: RespawnMode,
     val automaticDelaySeconds: Int,
+    val previousGameMode: String? = null,
 ) {
     val canReturn get() = lives != 0
     val canFinalize get() = !canReturn || voluntaryFinalDeath

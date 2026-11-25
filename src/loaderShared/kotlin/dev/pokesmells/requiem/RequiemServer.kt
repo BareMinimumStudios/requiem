@@ -32,7 +32,10 @@ object RequiemServer {
             else -> DeathCause.ENVIRONMENT
         }
         val current = data.record(player.uuid)
-        val updated = config.rules().begin(player.uuid, player.gameProfile.name, cause, current)
+        val updated = config.rules().begin(
+            player.uuid, player.gameProfile.name, cause, current,
+            previousGameMode = player.gameMode.gameModeForPlayer.name.lowercase(java.util.Locale.ROOT),
+        )
         if (updated == current) return
         data.update(player.uuid, updated)
         server.overworld().dataStorage.save()
@@ -128,9 +131,11 @@ object RequiemServer {
         if (updated.finalPolicy != null) {
             enforce(active, updated.finalPolicy)
             send(active, DeathView(pending.id, -1, pending.cause, false, false, true))
-        }
-        else {
-            if (active.isSpectator && !server.isHardcore) active.setGameMode(server.defaultGameType)
+        } else {
+            if (active.isSpectator && !server.isHardcore) {
+                val previousMode = pending.previousGameMode?.let(GameType::byName)
+                active.setGameMode(previousMode ?: server.defaultGameType)
+            }
             if (pending.respawnMode != RespawnMode.VANILLA) {
                 send(active, DeathView(pending.id, -1, pending.cause, false, false, true))
             }
@@ -172,5 +177,3 @@ object RequiemServer {
                     }))))
     }
 }
-
-

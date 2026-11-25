@@ -35,6 +35,7 @@ class RequiemData : SavedData() {
                 death.putString("policy", pending.policy.name)
                 death.putString("respawn", pending.respawnMode.name)
                 death.putInt("delay", pending.automaticDelaySeconds)
+                pending.previousGameMode?.let { death.putString("gameMode", it) }
                 entry.put("pending", death)
             }
             players.put(uuid.toString(), entry)
@@ -63,6 +64,7 @@ class RequiemData : SavedData() {
                         death.lives(), death.getBoolean("voluntary"), death.getBoolean("defer"),
                         FinalPolicy.valueOf(death.getString("policy")), RespawnMode.valueOf(death.getString("respawn")),
                         death.getInt("delay"),
+                        death.getString("gameMode").ifEmpty { null },
                     )
                 } else null
                 result.records[uuid] = PlayerRecord(
