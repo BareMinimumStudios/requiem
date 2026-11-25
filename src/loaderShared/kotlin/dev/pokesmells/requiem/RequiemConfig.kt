@@ -47,6 +47,7 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var twinkleHoldTicks = 20
     @NonSync var warpTicks = 102
     @NonSync var revealTicks = 36
+    @NonSync var spectatorRevealTicks = 42
     @NonSync var cameraSettle = true
     @NonSync var buttonHoverSound = "requiem_cinematics:button_hover"
     @NonSync var buttonHoverVolume = 0.24

@@ -40,7 +40,9 @@ sequence. Toggle `colorfulStars` for the
 occasional colored flares.
 The themed buttons ease in on hover and mark keyboard focus with bright
 corners. Final-death confirmation uses the same controls and starts with
-Go Back focused. Plain interface uses Minecraft's standard buttons.
+Go Back focused. After final death is confirmed, the stars fade into
+Spectator view over 42 ticks by default. Adjust this with `spectatorRevealTicks`.
+Plain interface uses Minecraft's standard buttons.
 Reduced motion uses instant button highlights, holds
 particles still and uses a short fade with no camera motion. A world can
 enable the first-join sequence independently of its death rules.

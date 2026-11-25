@@ -11,7 +11,7 @@ import kotlin.math.ceil
 class BetweenScreen(
     private val view: DeathView,
     private val send: (DeathChoice) -> Unit,
-    private val starClockOffset: Float = 0f,
+    private var starClockOffset: Float = 0f,
 ) : Screen(label("screen")) {
     private val isTransition = view.presentation == DeathPresentation.TRANSITION
     private val particles = DreamParticles()
@@ -21,6 +21,7 @@ class BetweenScreen(
     private var age = 0
     private var returnStarted: Int? = null
     private var choiceSent = false
+    private var finalStarted: Int? = null
     private var titleY = 0
     private var titleScale = 1f
     private var subtitleY = 0
@@ -38,6 +39,7 @@ class BetweenScreen(
         else -4f * (1f - timing.reveal(sceneClock(partialTick)))
 
     internal fun warpAudioFrame(): WarpAudioFrame? {
+        if (finalStarted != null) return WarpAudioFrame(0f, 0f, 0f)
         if (isTransition) {
             val clock = age.toFloat()
             val flight = if (reducedMotion) 0.25f else clock / timing.revealStart.coerceAtLeast(1)
@@ -49,19 +51,32 @@ class BetweenScreen(
     internal fun primingAudio(elapsed: Float): WarpAudioFrame =
         WarpEnvelope.prime(elapsed / twinkleHoldTicks.coerceIn(1, 20))
 
-    fun cancelReturn() {
+    fun cancelHandoff() {
+        val wasFinal = finalStarted != null
+        finalStarted = null
         returnStarted = null
         choiceSent = false
+        if (wasFinal && minecraft?.screen === this) minecraft?.setScreen(this)
         actionButtons.forEach { it.active = true }
     }
 
-    fun starClockAtHandoff(elapsed: Float): Float = starClockOffset + (returnStarted ?: age) + elapsed
+    fun starClockAtHandoff(elapsed: Float): Float =
+        starClockOffset + (finalStarted ?: returnStarted ?: age) + elapsed
+
+    internal fun starClock() = starClockOffset + age
 
     fun renderHandoff(graphics: GuiGraphics, clock: Float) {
+        renderStarField(graphics, starClockAtHandoff(clock))
+    }
+
+    internal fun renderStarField(graphics: GuiGraphics, clock: Float, reveal: Float = 0f) {
         val width = graphics.guiWidth()
         val height = graphics.guiHeight()
-        graphics.fillGradient(0, 0, width, height, 0xff03040c.toInt(), tinted(config.skyColor, 1f))
-        drawParticles(graphics, width, height, starClockAtHandoff(clock), 1f, null)
+        val opacity = 1f - reveal
+        graphics.fillGradient(0, 0, width, height, tinted(0x03040c, opacity), tinted(config.skyColor, opacity))
+        if (!config.plainInterface) {
+            drawParticles(graphics, width, height, clock, 1f - smoothStep(reveal), null)
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -80,6 +95,7 @@ class BetweenScreen(
 
     override fun init() {
         actionButtons.clear()
+        if (finalStarted != null) return
         if (!isTransition && !soundPlayed && config.playCinematics) {
             soundPlayed = true
             RequiemAudio.play(config.deathSound)
@@ -117,7 +133,12 @@ class BetweenScreen(
         }
         if (view.lives != 0) button(config.returnText) { choose(Decision.RETURN) }
         if (view.canFinalize) button(config.finalText) {
-            minecraft?.setScreen(FinalDeathScreen(view.transaction) { confirmed ->
+            minecraft?.setScreen(FinalDeathScreen(view.transaction, this) { confirmed, clock ->
+                starClockOffset = clock - age
+                if (confirmed && config.playCinematics && !config.plainInterface) {
+                    finalStarted = age
+                    RequiemClient.beginFinal(this)
+                }
                 minecraft?.setScreen(this)
                 if (confirmed) choose(Decision.FINAL)
             })
@@ -163,6 +184,10 @@ class BetweenScreen(
 
     override fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         val renderPartial = minecraft?.timer?.getGameTimeDeltaPartialTick(false) ?: partialTick
+        if (finalStarted != null) {
+            renderStarField(graphics, starClockOffset + sceneClock(renderPartial))
+            return
+        }
         val clock = sceneClock(renderPartial)
         val reveal = if (isTransition) timing.reveal(clock) else 0f
         val emergence = if (isTransition || reducedMotion) 1f else smoothStep(clock / 19f)

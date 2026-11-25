@@ -13,14 +13,23 @@ object RequiemClient {
         val send: (DeathChoice) -> Unit,
     )
 
-    private data class Handoff(val connection: ClientPacketListener, val screen: BetweenScreen, var ticks: Int = 0)
+    private data class Handoff(
+        val connection: ClientPacketListener,
+        val screen: BetweenScreen,
+        val finalDeath: Boolean,
+        var ticks: Int = 0,
+    )
 
     private var pending: Presentation? = null
     private var handoff: Handoff? = null
 
-    fun beginReturn(screen: BetweenScreen) {
+    fun beginReturn(screen: BetweenScreen) = beginHandoff(screen, finalDeath = false)
+
+    fun beginFinal(screen: BetweenScreen) = beginHandoff(screen, finalDeath = true)
+
+    private fun beginHandoff(screen: BetweenScreen, finalDeath: Boolean) {
         val connection = Minecraft.getInstance().connection ?: return
-        handoff = Handoff(connection, screen)
+        handoff = Handoff(connection, screen, finalDeath)
     }
 
     fun renderReturnHandoff(graphics: GuiGraphics): Boolean {
@@ -39,7 +48,10 @@ object RequiemClient {
         val minecraft = Minecraft.getInstance()
         advancePresentation(minecraft)
         val frame = (minecraft.screen as? BetweenScreen)?.warpAudioFrame()
-            ?: handoff?.let { it.screen.primingAudio(it.ticks.toFloat()) }
+            ?: (minecraft.screen as? SpectatorFadeScreen)?.audioFrame()
+            ?: handoff?.let {
+                if (it.finalDeath) it.screen.warpAudioFrame() else it.screen.primingAudio(it.ticks.toFloat())
+            }
         RequiemAudio.updateWarp(frame)
     }
 
@@ -49,7 +61,7 @@ object RequiemClient {
                 handoff = null
             } else if (++it.ticks > 240) {
                 handoff = null
-                it.screen.cancelReturn()
+                it.screen.cancelHandoff()
             } else if (pending == null && (minecraft.screen == null || minecraft.screen is DeathScreen)) {
                 minecraft.setScreen(it.screen)
             }
@@ -61,12 +73,19 @@ object RequiemClient {
         }
         if (minecraft.level == null || minecraft.player == null || minecraft.screen is ReceivingLevelScreen) return
         pending = null
-        val starClock = handoff?.let { it.screen.starClockAtHandoff(it.ticks.toFloat()) } ?: 0f
+        val current = handoff
+        val starClock = current?.let { it.screen.starClockAtHandoff(it.ticks.toFloat()) } ?: 0f
         handoff = null
         val config = RequiemSettings.config
         if (next.payload.presentation == DeathPresentation.CLOSE) {
             val screen = minecraft.screen
             val transaction = next.payload.transaction
+            if (current?.finalDeath == true && current.screen.isDecisionFor(transaction) &&
+                minecraft.player?.isSpectator == true && config.playCinematics && !config.plainInterface
+            ) {
+                minecraft.setScreen(SpectatorFadeScreen(current.screen, starClock))
+                return
+            }
             if (screen is BetweenScreen && screen.isDecisionFor(transaction) ||
                 screen is FinalDeathScreen && screen.transaction == transaction
             ) {
