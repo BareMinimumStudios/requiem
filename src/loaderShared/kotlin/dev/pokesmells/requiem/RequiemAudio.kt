@@ -13,6 +13,7 @@ import net.minecraft.util.RandomSource
 internal object RequiemAudio {
     private var lastHover = 0L
     private var warp: WarpLoop? = null
+    private var warpTailTicks = 0
     var worldGain = 1f
         private set
 
@@ -56,24 +57,25 @@ internal object RequiemAudio {
         worldGain += (worldTarget - worldGain) * 0.45f
         if (kotlin.math.abs(worldTarget - worldGain) < 0.001f) worldGain = worldTarget
 
-        if (config.muteCinematics || !config.playCinematics) {
-            warp?.release()
-            warp = null
+        val audioEnabled = !config.muteCinematics && config.playCinematics
+        if (frame == null || !audioEnabled) {
+            val connected = Minecraft.getInstance().connection != null
+            if (!audioEnabled || !connected) warp?.release(6, shorten = true)
+            else warp?.release(if (warpTailTicks > 0) warpTailTicks else 6)
+            warpTailTicks = 0
+            if (warp?.isStopped == true) warp = null
             return
         }
-        val target = (config.warpVolume.coerceIn(0.0, 1.0) * (frame?.gain ?: 0f)).toFloat()
-        if (frame == null) {
-            warp?.release()
-            warp = null
-            return
-        }
+        warpTailTicks = frame.tailTicks
+        val target = (config.warpVolume.coerceIn(0.0, 1.0) * frame.gain).toFloat()
         val start = config.warpStartPitch.coerceIn(0.5, 2.0).toFloat()
         val peak = config.warpPeakPitch.coerceIn(0.5, 2.0).toFloat()
         val pitch = start + (peak - start) * frame.pitchProgress
-        if (warp == null || warp?.isStopped == true) {
+        if (warp == null || warp?.isStopped == true || warp?.isReleasing == true) {
             if (target <= 0f) return
             val manager = Minecraft.getInstance().soundManager
             val event = soundEvent(manager, config.warpSound) ?: return
+            warp?.release(6, shorten = true)
             warp = WarpLoop(event, pitch).also(manager::play)
         }
         warp?.aim(target, pitch)
@@ -91,6 +93,9 @@ internal object RequiemAudio {
         private var targetVolume = 0f
         private var targetPitch = initialPitch
         private var releaseTicks = 0
+        private var releaseDuration = 0
+        private var releaseVolume = 0f
+        val isReleasing get() = releaseTicks > 0
 
         init {
             looping = true
@@ -107,14 +112,17 @@ internal object RequiemAudio {
             targetPitch = pitch
         }
 
-        fun release() {
-            releaseTicks = 6
-            targetVolume = 0f
+        fun release(ticks: Int, shorten: Boolean = false) {
+            if (isStopped || (isReleasing && (!shorten || releaseTicks <= ticks))) return
+            releaseTicks = ticks
+            releaseDuration = ticks
+            releaseVolume = volume
         }
 
         override fun tick() {
             if (releaseTicks > 0) {
-                volume *= (--releaseTicks).toFloat() / (releaseTicks + 1)
+                val remaining = (--releaseTicks).toFloat() / releaseDuration
+                volume = releaseVolume * remaining * remaining
                 if (releaseTicks == 0) stop()
                 return
             }

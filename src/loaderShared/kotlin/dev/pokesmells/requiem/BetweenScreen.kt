@@ -43,7 +43,9 @@ class BetweenScreen(
         if (isTransition) {
             val clock = age.toFloat()
             val flight = if (reducedMotion) 0.25f else clock / timing.revealStart.coerceAtLeast(1)
-            return WarpEnvelope.flight(flight, timing.reveal(clock))
+            val stretch = if (reducedMotion) 0f else StarFlight.stretch(clock)
+            val tail = if (reducedMotion) 0 else config.warpTailTicks.coerceIn(0, 80)
+            return WarpEnvelope.flight(flight, timing.reveal(clock), stretch, tail)
         }
         return returnStarted?.let { primingAudio((age - it).toFloat()) }
     }
