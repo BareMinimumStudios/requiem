@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import net.minecraft.util.FormattedCharSequence
+import org.lwjgl.glfw.GLFW
 import kotlin.math.ceil
 
 class BetweenScreen(
@@ -30,7 +31,15 @@ class BetweenScreen(
     private var livesLabel: Component? = null
     private val reducedMotion = !config.playCinematics || config.reducedMotion || config.plainInterface
     private val timing = CinematicTiming.forSettings(reducedMotion, config.warpTicks, config.revealTicks)
-    private val dialogueTicks = if (!isTransition && !reducedMotion && config.playDecisionDialogue) 60 else 0
+    private val dialogue = if (!isTransition && !reducedMotion && config.playDecisionDialogue) {
+        listOf("…", "…", config.disorientedText)
+    } else {
+        emptyList()
+    }
+    private var dialogueStep = 0
+    private var dialogueChangedAt = 0
+    private var dialogueKeyHeld = false
+    private val dialoguePending get() = dialogueStep < dialogue.size
     private val twinkleHoldTicks = config.twinkleHoldTicks.coerceIn(0, 80)
 
     private fun sceneClock(partialTick: Float): Float = (age - 1).coerceAtLeast(0) + partialTick.coerceIn(0f, 1f)
@@ -150,7 +159,7 @@ class BetweenScreen(
     }
 
     private fun addAction(button: Button) {
-        if (age < dialogueTicks) {
+        if (dialoguePending) {
             button.visible = false
             button.active = false
         }
@@ -201,8 +210,12 @@ class BetweenScreen(
         val windup = returnStarted?.let { smoothStep((clock - it) / (twinkleHoldTicks - 1).coerceAtLeast(1)) } ?: 0f
         val darkness = if (isTransition) 1f - reveal else emergence
         val flightTicks = if (isTransition && !reducedMotion) clock else null
-        val controls = if (isTransition) 1f - reveal else
-            (if (reducedMotion) 1f else smoothStep((clock - dialogueTicks - 4f) / 12f)) * (1f - windup)
+        val controls = when {
+            isTransition -> 1f - reveal
+            dialoguePending -> 0f
+            reducedMotion -> 1f
+            else -> smoothStep((clock - dialogueChangedAt - 4f) / 12f) * (1f - windup)
+        }
 
         graphics.fillGradient(0, 0, width, height, tinted(0x03040c, darkness), tinted(config.skyColor, darkness))
         if (!config.plainInterface) {
@@ -215,7 +228,7 @@ class BetweenScreen(
             it.setAlpha(controls)
         }
         if (isTransition) RequiemRecap.render(graphics, view.transaction, clock, timing.revealStart)
-        if (clock < dialogueTicks) drawDialogue(graphics, clock)
+        if (dialoguePending) drawDialogue(graphics, clock)
         if (!isTransition && controls > 0.05f) {
             val textColor = tinted(config.textColor, controls)
             val pose = graphics.pose()
@@ -232,21 +245,47 @@ class BetweenScreen(
         super.render(graphics, mouseX, mouseY, partialTick)
     }
 
-    private fun drawDialogue(graphics: GuiGraphics, clock: Float) {
-        val (start, end, text) = when {
-            clock < 14f -> Triple(0f, 14f, "…")
-            clock < 19f -> return
-            clock < 31f -> Triple(19f, 31f, "…")
-            clock < 36f -> return
-            else -> Triple(36f, dialogueTicks.toFloat(), config.disorientedText)
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (!dialoguePending || button != GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            return super.mouseClicked(mouseX, mouseY, button)
         }
-        val alpha = smoothStep((clock - start) / 4f) * smoothStep((end - clock) / 5f)
+        advanceDialogue()
+        return true
+    }
+
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if ((dialoguePending || dialogueKeyHeld) && isDialogueKey(keyCode)) {
+            if (!dialogueKeyHeld) advanceDialogue()
+            dialogueKeyHeld = true
+            return true
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers)
+    }
+
+    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (isDialogueKey(keyCode)) dialogueKeyHeld = false
+        return super.keyReleased(keyCode, scanCode, modifiers)
+    }
+
+    private fun isDialogueKey(keyCode: Int) =
+        keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || keyCode == GLFW.GLFW_KEY_SPACE
+
+    private fun advanceDialogue() {
+        dialogueStep++
+        dialogueChangedAt = age
+    }
+
+    private fun drawDialogue(graphics: GuiGraphics, clock: Float) {
+        val alpha = smoothStep((clock - dialogueChangedAt) / 7f)
         if (alpha < 0.025f) return
-        val lines = font.split(Component.literal(text), (width - 24).coerceAtLeast(1))
+        val lines = font.split(Component.literal(dialogue[dialogueStep]), (width - 24).coerceAtLeast(1))
         val top = (height - lines.size * font.lineHeight) / 2
         lines.forEachIndexed { index, line ->
             graphics.drawCenteredString(font, line, width / 2, top + index * font.lineHeight, tinted(config.textColor, alpha))
         }
+        graphics.drawCenteredString(font, label("dialogue_continue"), width / 2,
+            (top + lines.size * font.lineHeight + 12).coerceAtMost((height - font.lineHeight).coerceAtLeast(0)),
+            tinted(config.textColor, alpha * 0.6f))
     }
 
     override fun renderBackground(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) = Unit

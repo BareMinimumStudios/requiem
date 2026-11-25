@@ -6,6 +6,7 @@
   "requiem_cinematics.confirm_accept": "Accept Final Death",
   "requiem_cinematics.confirm_cancel": "Go Back",
   "requiem_cinematics.skip": "Skip",
+  "requiem_cinematics.dialogue_continue": "Click to continue",
   "requiem_cinematics.unlimited": "Unlimited lives",
   "requiem_cinematics.lives": "Lives remaining: %s"
 }

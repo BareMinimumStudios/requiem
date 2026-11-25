@@ -54,7 +54,7 @@ flight progresses. Each is at most 128 pixels on its longest edge. Frames stay i
 interface elements such as the HUD are excluded.
 
 The decision screen opens with two quiet beats and a short line of
-dialogue. Customize the line with `disorientedText`, and the prompt and
+dialogue. Click or press Enter or Space to advance each beat. Customize the line with `disorientedText`, and the prompt and
 choices with the existing text settings. Disable the delay with
 `playDecisionDialogue`. Reduced motion and plain interface show the
 choices immediately.
