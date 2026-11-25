@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.pokesmells.requiem.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["ServerPlayerMixin", "ServerGamePacketListenerMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

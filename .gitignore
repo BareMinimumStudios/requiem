@@ -1,0 +1,7 @@
+.gradle/
+.kotlin/
+.idea/
+**/build/
+run/
+*.iml
+*-verification.log
