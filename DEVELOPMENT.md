@@ -35,7 +35,7 @@ Stars that pass the camera reappear in the distance, and the flight keeps
 moving through the world reveal. `twinkleHoldTicks` controls the pause on the
 star field after selecting Return to Existence. `warpTicks` controls the flight
 and reveal after the destination is ready. `revealTicks` controls the fade into
-first person and defaults to 36 ticks (1.8 seconds), within the 102-tick
+first person and defaults to 36 ticks (1.8 seconds), within the 152-tick
 sequence. Toggle `colorfulStars` for the
 occasional colored flares.
 The themed buttons ease in on hover and mark keyboard focus with bright
@@ -51,7 +51,8 @@ enable the first-join sequence independently of its death rules.
 
 Use `buttonHoverSound`, `buttonClickSound`, and `warpSound` for sound-event IDs.
 Each cue has a separate volume from 0 to 1. An empty ID silences that cue.
-The warp loop begins quietly, rises from `warpStartPitch` toward
+The warp loop layers sustained harmonics and soft bell tones. It begins
+quietly, rises from `warpStartPitch` toward
 `warpPeakPitch`, and fades during the reveal. `returnSound` is the short
 accent at the start of the reveal. Set `muteCinematics` to silence all
 Requiem cues.

@@ -45,7 +45,7 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var starCount = 320
     @NonSync var colorfulStars = true
     @NonSync var twinkleHoldTicks = 20
-    @NonSync var warpTicks = 102
+    @NonSync var warpTicks = 152
     @NonSync var revealTicks = 36
     @NonSync var spectatorRevealTicks = 42
     @NonSync var cameraSettle = true
