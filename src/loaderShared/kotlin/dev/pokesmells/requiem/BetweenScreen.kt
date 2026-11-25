@@ -271,6 +271,7 @@ class BetweenScreen(
         keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || keyCode == GLFW.GLFW_KEY_SPACE
 
     private fun advanceDialogue() {
+        RequiemAudio.click()
         dialogueStep++
         dialogueChangedAt = age
     }
