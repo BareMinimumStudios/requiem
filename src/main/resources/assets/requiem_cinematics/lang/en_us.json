@@ -5,9 +5,6 @@
   "requiem_cinematics.confirm_body": "The world's final-death policy will take effect.",
   "requiem_cinematics.skip": "Skip",
   "requiem_cinematics.unlimited": "Unlimited lives",
-  "requiem_cinematics.lives": "Lives remaining: %s",
-  "requiem_cinematics.cause.player": "Fell to another player",
-  "requiem_cinematics.cause.mob": "Fell to a creature",
-  "requiem_cinematics.cause.environment": "Fell to the world"
+  "requiem_cinematics.lives": "Lives remaining: %s"
 }
 

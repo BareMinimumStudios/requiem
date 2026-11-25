@@ -9,6 +9,8 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.util.FormattedCharSequence
+import kotlin.math.ceil
 
 class BetweenScreen(
     private val view: DeathView,
@@ -18,6 +20,12 @@ class BetweenScreen(
     private val config get() = RequiemSettings.config
     private var age = 0
     private var skip: Button? = null
+    private var titleY = 0
+    private var titleScale = 1f
+    private var subtitleY = 0
+    private var subtitleLines = emptyList<FormattedCharSequence>()
+    private var livesY = 0
+    private var livesLabel: Component? = null
     private val reducedMotion = !config.playCinematics || config.reducedMotion || config.plainInterface
     private val timing = CinematicTiming.forSettings(reducedMotion, config.warpTicks, config.revealTicks)
 
@@ -44,7 +52,27 @@ class BetweenScreen(
                 .bounds(width - 82, 10, 72, 20).build())
             return
         }
-        var top = height / 2 + 20
+        val textWidth = minOf(310, (width - 24).coerceAtLeast(1))
+        val availableScale = textWidth.toFloat() / font.width(config.title).coerceAtLeast(1)
+        titleScale = minOf(config.titleScale.coerceIn(0.75, 3.0).toFloat(), availableScale)
+        val titleHeight = ceil(font.lineHeight * titleScale).toInt()
+        val buttonCount = listOf(view.lives != 0, view.canFinalize, view.canDefer).count { it }
+        livesLabel = when {
+            !config.showLivesRemaining -> null
+            view.lives < 0 -> label("unlimited")
+            else -> label("lives", view.lives)
+        }
+        val livesHeight = if (livesLabel != null) font.lineHeight + 8 else 0
+        val fixedHeight = titleHeight + 12 + livesHeight + 18 + (buttonCount * 24 - 4)
+        val maxLines = ((height - fixedHeight - 16) / font.lineHeight).coerceAtLeast(1)
+        val wrapped = font.split(Component.literal(config.subtitle), textWidth)
+        subtitleLines = if (wrapped.size <= maxLines) wrapped
+            else wrapped.take(maxLines - 1) + Component.literal("…").visualOrderText
+        val subtitleHeight = subtitleLines.size * font.lineHeight
+        titleY = ((height - fixedHeight - subtitleHeight) / 2).coerceAtLeast(4)
+        subtitleY = titleY + titleHeight + 12
+        livesY = subtitleY + subtitleHeight + 8
+        var top = subtitleY + subtitleHeight + livesHeight + 18
         fun button(text: String, action: () -> Unit) {
             val buttonWidth = minOf(200, width - 20)
             val x = (width - buttonWidth) / 2
@@ -98,19 +126,16 @@ class BetweenScreen(
         }
         skip?.setAlpha(darkness)
         if (!view.intro) {
-            val scale = config.titleScale.coerceIn(0.75, 3.0).toFloat()
             val pose = graphics.pose()
             pose.pushPose()
-            pose.translate(width / 2f, height / 2f - 70, 0f)
-            pose.scale(scale, scale, 1f)
+            pose.translate((width / 2).toFloat(), titleY.toFloat(), 0f)
+            pose.scale(titleScale, titleScale, 1f)
             graphics.drawCenteredString(font, config.title, 0, 0, textColor)
             pose.popPose()
-            graphics.drawWordWrap(font, Component.literal(config.subtitle), width / 8, height / 2 - 42,
-                width * 3 / 4, textColor)
-            val lives = if (view.lives < 0) label("unlimited") else label("lives", view.lives)
-            graphics.drawCenteredString(font, lives, width / 2, height / 2 - 12, textColor)
-            val cause = label("cause.${view.cause.name.lowercase(java.util.Locale.ROOT)}")
-            graphics.drawCenteredString(font, cause, width / 2, height / 2 + 1, textColor)
+            subtitleLines.forEachIndexed { index, line ->
+                graphics.drawCenteredString(font, line, width / 2, subtitleY + index * font.lineHeight, textColor)
+            }
+            livesLabel?.let { graphics.drawCenteredString(font, it, width / 2, livesY, textColor) }
         }
         super.render(graphics, mouseX, mouseY, partialTick)
     }

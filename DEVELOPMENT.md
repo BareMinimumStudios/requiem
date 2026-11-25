@@ -27,6 +27,8 @@ vanilla ban list.
 
 The client settings control the title, subtitle, choice labels, palette,
 particle count, warp duration, reveal duration, camera settling and sounds.
+The life count is hidden by default and can be enabled with
+`showLivesRemaining`.
 The three particle layers are generated on the client without frame capture.
 Plain interface uses Minecraft's standard buttons. Reduced motion holds
 particles still and uses a short fade with no camera motion. A world can
