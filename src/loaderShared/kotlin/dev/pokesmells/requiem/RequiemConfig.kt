@@ -38,8 +38,12 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var deferText = "Choose Later"
     @NonSync var skyColor = 0x14152D
     @NonSync var starColor = 0xA9BBFF
+    @NonSync var accentColor = 0x819BEF
     @NonSync var textColor = 0xEFF3FF
     @NonSync var titleScale = 1.5
+    @NonSync var starCount = 240
+    @NonSync var warpTicks = 48
+    @NonSync var deathSound = "minecraft:block.amethyst_block.resonate"
     @NonSync var returnSound = "minecraft:block.amethyst_block.chime"
 
     fun rules(): MortalityRules {
@@ -64,4 +68,3 @@ class RequiemConfig : Config(id("settings")) {
 object RequiemSettings {
     val config: RequiemConfig by lazy { ConfigApi.registerAndLoadConfig(::RequiemConfig) }
 }
-
