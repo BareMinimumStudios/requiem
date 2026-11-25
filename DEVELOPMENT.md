@@ -63,7 +63,7 @@ choices immediately.
 
 Use `buttonHoverSound`, `buttonClickSound`, and `warpSound` for sound-event IDs.
 Each cue has a separate volume from 0 to 1. An empty ID silences that cue.
-The bundled return track streams once at its recorded pitch. Configured
+The bundled return track streams once at its recorded pitch, starting with the flight. Configured
 replacement sounds can loop and sweep from `warpStartPitch` toward
 `warpPeakPitch`. The warp audio fades into world sounds during the reveal.
 `warpTailTicks` controls the trail after the reveal. It defaults to 28 ticks.

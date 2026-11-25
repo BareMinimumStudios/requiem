@@ -45,7 +45,7 @@ internal object RequiemAudio {
         manager.play(SimpleSoundInstance.forUI(event, 1f, volume.coerceIn(0.0, 1.0).toFloat()))
     }
 
-    fun updateWarp(frame: WarpAudioFrame?) {
+    fun updateWarp(frame: WarpAudioFrame?, flightStarted: Boolean) {
         val config = RequiemSettings.config
         val blend = if (config.crossfadeWorldAudio && !config.muteCinematics && config.playCinematics) {
             frame?.worldBlend ?: 1f
@@ -75,7 +75,7 @@ internal object RequiemAudio {
         val bundled = config.warpSound == "$MOD_ID:warp"
         val pitch = if (bundled) 1f else start + (peak - start) * frame.pitchProgress
         if (warp == null || warp?.isStopped == true || warp?.isReleasing == true) {
-            if (target <= 0f || bundled && playedBundledCue) return
+            if (target <= 0f || bundled && (!flightStarted || playedBundledCue)) return
             val manager = Minecraft.getInstance().soundManager
             val event = soundEvent(manager, config.warpSound) ?: return
             warp?.release(6, shorten = true)

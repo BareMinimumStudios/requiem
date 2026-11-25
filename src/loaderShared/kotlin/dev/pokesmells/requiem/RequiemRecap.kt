@@ -96,28 +96,32 @@ internal object RequiemRecap {
     fun render(graphics: GuiGraphics, id: UUID, clock: Float, revealStart: Int) {
         if (transaction != id || frames.isEmpty() || !enabled()) return
         val client = Minecraft.getInstance()
-        val duration = minOf(460f, revealStart * 0.87f)
+        val duration = minOf(550f, revealStart * 1.025f)
         if (clock >= duration || duration < 14f) {
             clear(client)
             return
         }
         val progress = (clock / duration).coerceIn(0f, 1f)
-        val cursor = frames.size * progress * (0.12f + progress * (0.24f + 0.64f * progress))
+        val cursor = frames.size * recapPosition(progress)
         val position = cursor.toInt().coerceIn(frames.indices)
-        val mix = smoothStep((cursor - position) / 0.22f)
-        val visibility = smoothStep(progress / 0.05f) * (1f - smoothStep((progress - 0.90f) / 0.10f))
+        val phase = cursor - position
+        val rush = smoothStep((progress - 0.63f) / 0.31f)
+        val mix = smoothStep(phase / (0.25f - 0.15f * rush))
+        val flicker = smoothStep(phase / 0.07f) * (1f - smoothStep((phase - 0.10f) / 0.18f))
+        val visibility = smoothStep(progress / 0.05f) *
+            (1f - smoothStep((progress - 0.92f) / 0.08f)) * (1f - 0.38f * rush * flicker)
+        val depth = (1f - 0.62f * smoothStep(progress)) * (1f + 0.15f * rush * (1f - mix))
         if (position > 0 && mix < 1f) {
-            drawMemory(graphics, client, frames[frames.lastIndex - position + 1], progress, visibility * (1f - mix))
+            drawMemory(graphics, client, frames[frames.lastIndex - position + 1], depth, visibility * (1f - mix))
         }
-        drawMemory(graphics, client, frames[frames.lastIndex - position], progress, visibility * if (position == 0) 1f else mix)
+        drawMemory(graphics, client, frames[frames.lastIndex - position], depth, visibility * if (position == 0) 1f else mix)
     }
 
-    private fun drawMemory(graphics: GuiGraphics, client: Minecraft, frame: Frame, progress: Float, alpha: Float) {
+    private fun drawMemory(graphics: GuiGraphics, client: Minecraft, frame: Frame, depth: Float, alpha: Float) {
         if (alpha < 0.01f) return
         val texture = frame.texture ?: client.textureManager.register("requiem_recap", DynamicTexture(frame.image))
             .also { frame.texture = it }
-        val recession = 1f - 0.57f * smoothStep(progress)
-        val scale = recession * minOf(graphics.guiWidth() * 0.72f / frame.image.width,
+        val scale = depth * minOf(graphics.guiWidth() * 0.72f / frame.image.width,
             graphics.guiHeight() * 0.60f / frame.image.height)
         val width = (frame.image.width * scale).roundToInt().coerceAtLeast(1)
         val height = (frame.image.height * scale).roundToInt().coerceAtLeast(1)

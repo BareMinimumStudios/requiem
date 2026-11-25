@@ -14,7 +14,7 @@ class BetweenScreen(
     private val send: (DeathChoice) -> Unit,
     private var starClockOffset: Float = 0f,
 ) : Screen(label("screen")) {
-    private val isTransition = view.presentation == DeathPresentation.TRANSITION
+    internal val isTransition = view.presentation == DeathPresentation.TRANSITION
     private val particles = DreamParticles()
     private val actionButtons = mutableListOf<Button>()
     private var soundPlayed = false

@@ -48,12 +48,13 @@ object RequiemClient {
         val minecraft = Minecraft.getInstance()
         RequiemRecap.tick(minecraft)
         advancePresentation(minecraft)
-        val frame = (minecraft.screen as? BetweenScreen)?.warpAudioFrame()
+        val between = minecraft.screen as? BetweenScreen
+        val frame = between?.warpAudioFrame()
             ?: (minecraft.screen as? SpectatorFadeScreen)?.audioFrame()
             ?: handoff?.let {
                 if (it.finalDeath) it.screen.warpAudioFrame() else it.screen.primingAudio(it.ticks.toFloat())
             }
-        RequiemAudio.updateWarp(frame)
+        RequiemAudio.updateWarp(frame, between?.isTransition == true)
     }
 
     private fun advancePresentation(minecraft: Minecraft) {
