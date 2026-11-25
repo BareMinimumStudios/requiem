@@ -13,6 +13,14 @@ import net.minecraft.util.RandomSource
 internal object RequiemAudio {
     private var lastHover = 0L
     private var warp: WarpLoop? = null
+    var worldGain = 1f
+        private set
+
+    fun isWorldSound(source: SoundSource) = when (source) {
+        SoundSource.AMBIENT, SoundSource.WEATHER, SoundSource.BLOCKS, SoundSource.NEUTRAL,
+        SoundSource.HOSTILE, SoundSource.PLAYERS, SoundSource.RECORDS -> true
+        else -> false
+    }
 
     fun hover() {
         val config = RequiemSettings.config
@@ -37,6 +45,17 @@ internal object RequiemAudio {
 
     fun updateWarp(frame: WarpAudioFrame?) {
         val config = RequiemSettings.config
+        val blend = if (config.crossfadeWorldAudio && !config.muteCinematics && config.playCinematics) {
+            frame?.worldBlend ?: 1f
+        } else {
+            1f
+        }
+        // Keep live channels open even at the quietest setting.
+        val floor = config.warpWorldVolume.coerceIn(0.01, 1.0).toFloat()
+        val worldTarget = floor + (1f - floor) * blend
+        worldGain += (worldTarget - worldGain) * 0.45f
+        if (kotlin.math.abs(worldTarget - worldGain) < 0.001f) worldGain = worldTarget
+
         if (config.muteCinematics || !config.playCinematics) {
             warp?.release()
             warp = null

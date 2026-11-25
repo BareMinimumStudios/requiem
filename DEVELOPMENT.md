@@ -52,6 +52,13 @@ The warp loop begins quietly, rises from `warpStartPitch` toward
 accent at the start of the reveal. Set `muteCinematics` to silence all
 Requiem cues.
 
+With `crossfadeWorldAudio` enabled, world sounds dip as the warp starts and
+gradually return to their normal levels as first person comes into view.
+`warpWorldVolume` sets their quietest level, from 0.01 to 1, and defaults to
+0.12. Minecraft's volume sliders still set the base levels. Music and
+interface sounds keep their usual volume. Muting or disabling cinematics
+also disables the crossfade.
+
 ## Incapacitated development runs
 
 Incapacitated 2.0.1 requires NeoForge 21.1.200 or later on Minecraft 1.21.1.

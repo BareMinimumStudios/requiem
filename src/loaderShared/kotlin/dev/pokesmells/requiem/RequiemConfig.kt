@@ -56,6 +56,8 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var warpVolume = 0.48
     @NonSync var warpStartPitch = 0.72
     @NonSync var warpPeakPitch = 1.28
+    @NonSync var crossfadeWorldAudio = true
+    @NonSync var warpWorldVolume = 0.12
 
     @NonSync var deathSound = "minecraft:block.amethyst_block.resonate"
     @NonSync var returnSound = "minecraft:block.amethyst_block.chime"

@@ -15,4 +15,17 @@ class WarpEnvelopeTest {
         assertTrue(WarpEnvelope.flight(1f, 0.5f).gain < peak.gain)
         assertEquals(0f, WarpEnvelope.flight(1f, 1f).gain)
     }
+
+    @Test
+    fun worldAudioDucksDuringTheWaitAndReturnsWithTheReveal() {
+        val waiting = (0..10).map { WarpEnvelope.prime(it / 10f).worldBlend }
+        assertEquals(1f, waiting.first())
+        assertEquals(0f, waiting.last())
+        assertTrue(waiting.zipWithNext().all { (before, after) -> before > after })
+
+        val reveal = (0..10).map { WarpEnvelope.flight(1f, it / 10f).worldBlend }
+        assertEquals(0f, reveal.first())
+        assertEquals(1f, reveal.last())
+        assertTrue(reveal.zipWithNext().all { (before, after) -> before < after })
+    }
 }
