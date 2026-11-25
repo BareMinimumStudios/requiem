@@ -9,7 +9,9 @@ Repository is the user-selected BareMinimumStudios/requiem checkout. Display nam
 5. Build The Between, a confirmation view, deferred exit, optional first-join scene and hyperspace-to-first-person handoff. Keep text, scale, colors, themes and sounds configurable. Check reduced motion, muted audio, keyboard, narration, shaders and resize.
 6. Smoke-test dedicated server and client on Fabric and NeoForge. Check Incapacitated revive and bleed-out, plus grave, shader and respawn mods independently. Claim only tested compatibility.
 
-Build with gradlew.bat build. Launch the Cloche client and server runs separately on each loader. Run test against the shared lifecycle rules before multiplayer and restart cases.
+Build with `gradlew.bat build` using Java 21. The Cloche tasks
+`runFabric1211Client`, `runFabric1211Server`, `runNeoforge1211Client`, and
+`runNeoforge1211Server` each have their own directory under `build/run`.
 
 ## Development status
 
@@ -22,19 +24,29 @@ On integrated servers a ban policy places the player in spectator instead.
 Use /requiem release <online player> <lives> to release a player and set their
 limited-mode allocation. Dedicated-server bans also require a vanilla pardon.
 
-Incapacitated 2.0.1 is the first integration target. The shared tail injection
-observes completed player deaths. Validate that a down-and-revive leaves the
-record untouched and that bleed-out, give-up, and overkill each count once.
-Run the same inventory and XP checks with a grave mod. Run the screen with
-and without a shader mod. The current presentation uses screen-space stars
-and configurable sounds, with plain and reduced-motion modes.
+The client settings control the title, subtitle, choice labels, palette,
+star count, warp duration and sounds. Plain interface uses Minecraft's standard
+buttons. Reduced motion holds stars still and shortens the fade. A world can
+enable the first-join sequence independently of its death rules.
+
+## Incapacitated development runs
+
+Incapacitated 2.0.1 requires NeoForge 21.1.200 or later on Minecraft 1.21.1.
+The Requiem development build uses NeoForge 21.1.267. Pass
+`-PtestIncapacitated` to add the matching 2.0.1 artifact to either loader's
+development run. On Fabric, extract Incapacitated's two bundled
+`cardinal-components-*.jar` files from `META-INF/jars` and pass
+`-PincapacitatedNestedMods=<directory>` so Cloche can remap them with the mod.
+Published Requiem JARs require neither Incapacitated nor Cardinal Components.
 
 ## Verified locally
 
-- Java 21 offline build for both loader JARs and the shared mortality tests.
-- Packaged metadata and remapped Fabric mixins.
-- Dedicated NeoForge development server reached the ready state. Fabric loaded
-  the mod and config and stopped at the Minecraft EULA prompt.
-- Client rendering, full death/reconnect/respawn flows and third-party mod
-  combinations still require in-game checks. The initial warp is a
-  screen-space effect, and the handoff has not been visually verified.
+- Built both JARs and ran the shared mortality tests with Java 21.
+- In integrated Minecraft 1.21.1 on Fabric and NeoForge with Incapacitated
+  2.0.1, downed and revived a player without spending a life. The subsequent
+  bleed-out spent one life from an allocation of three.
+- Chose Later on both loaders, reopened the world, confirmed the same
+  transaction and balance, then resurrected in first person in the original
+  Adventure mode. Captured The Between and the warp from the game framebuffer.
+- Dedicated multiplayer gameplay, Incapacitated give-up and overkill, and other
+  mod combinations remain separate test cases.

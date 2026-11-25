@@ -9,6 +9,7 @@ plugins {
 
 group = providers.gradleProperty("maven_group").get()
 version = providers.gradleProperty("mod_version").get()
+val testIncapacitated = providers.gradleProperty("testIncapacitated").isPresent
 
 repositories {
     mavenCentral()
@@ -22,6 +23,9 @@ repositories {
     }
     maven("https://thedarkcolour.github.io/KotlinForForge/")
     maven("https://maven.fzzyhmstrs.me/")
+    if (testIncapacitated) {
+        maven("https://api.modrinth.com/maven") { content { includeGroup("maven.modrinth") } }
+    }
 }
 
 cloche {
@@ -56,6 +60,12 @@ cloche {
             fabricApi(libs.versions.fabric.api)
             modImplementation(libs.fabric.language.kotlin)
             modImplementation(libs.fzzy.config.fabric)
+            if (testIncapacitated) {
+                modImplementation(libs.incapacitated.fabric)
+                providers.gradleProperty("incapacitatedNestedMods").orNull?.let { path ->
+                    modImplementation(fileTree(path) { include("cardinal-components-*.jar") })
+                }
+            }
         }
         metadata {
             dependencies {
@@ -80,6 +90,7 @@ cloche {
         dependencies {
             modImplementation(libs.neoforge.language.kotlin)
             modImplementation(libs.fzzy.config.neoforge)
+            if (testIncapacitated) modImplementation(libs.incapacitated.neoforge)
         }
         metadata {
             modLoader = "kotlinforforge"
