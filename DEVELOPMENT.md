@@ -43,6 +43,15 @@ Reduced motion uses instant button highlights, holds
 particles still and uses a short fade with no camera motion. A world can
 enable the first-join sequence independently of its death rules.
 
+## Client audio
+
+Use `buttonHoverSound`, `buttonClickSound`, and `warpSound` for sound-event IDs.
+Each cue has a separate volume from 0 to 1. An empty ID silences that cue.
+The warp loop begins quietly, rises from `warpStartPitch` toward
+`warpPeakPitch`, and fades during the reveal. `returnSound` is the short
+accent at the start of the reveal. Set `muteCinematics` to silence all
+Requiem cues.
+
 ## Incapacitated development runs
 
 Incapacitated 2.0.1 requires NeoForge 21.1.200 or later on Minecraft 1.21.1.

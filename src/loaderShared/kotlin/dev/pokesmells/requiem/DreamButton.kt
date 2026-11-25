@@ -3,6 +3,7 @@ package dev.pokesmells.requiem
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
+import net.minecraft.client.sounds.SoundManager
 import net.minecraft.network.chat.Component
 import kotlin.math.roundToInt
 
@@ -10,21 +11,31 @@ internal fun dreamButton(
     x: Int, y: Int, width: Int, message: Component, action: () -> Unit,
 ): Button {
     val config = RequiemSettings.config
-    return if (config.plainInterface) {
-        Button.builder(message) { action() }.bounds(x, y, width, 20).build()
-    } else {
-        DreamButton(x, y, width, message, config.accentColor, config.reducedMotion || !config.playCinematics, action)
-    }
+    return DreamButton(x, y, width, message, config.accentColor, config.plainInterface,
+        config.reducedMotion || !config.playCinematics, action)
 }
 
 private class DreamButton(
     x: Int, y: Int, width: Int, message: Component, private val accent: Int,
-    private val reducedMotion: Boolean, action: () -> Unit,
-) : Button(x, y, width, 20, message, { action() }, DEFAULT_NARRATION) {
+    private val plain: Boolean, private val reducedMotion: Boolean, action: () -> Unit,
+) : Button(x, y, width, 20, message, {
+    RequiemAudio.click()
+    action()
+}, DEFAULT_NARRATION) {
     private var highlight = 0f
     private var lastFrame = 0L
+    private var wasHovered = false
+
+    override fun playDownSound(soundManager: SoundManager) = Unit
 
     override fun renderWidget(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+        val hovered = active && isHovered
+        if (hovered && !wasHovered) RequiemAudio.hover()
+        wasHovered = hovered
+        if (plain) {
+            super.renderWidget(graphics, mouseX, mouseY, partialTick)
+            return
+        }
         val target = if (active && isHoveredOrFocused) 1f else 0f
         val now = System.nanoTime()
         val elapsed = ((now - lastFrame) / 1_000_000f).coerceIn(0f, 50f)

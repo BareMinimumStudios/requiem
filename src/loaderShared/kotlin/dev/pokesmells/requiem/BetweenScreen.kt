@@ -4,10 +4,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.Screen
-import net.minecraft.client.resources.sounds.SimpleSoundInstance
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.util.FormattedCharSequence
 import kotlin.math.ceil
 
@@ -40,6 +37,18 @@ class BetweenScreen(
         if (!isTransition || reducedMotion || !config.cameraSettle) 0f
         else -4f * (1f - timing.reveal(sceneClock(partialTick)))
 
+    internal fun warpAudioFrame(): WarpAudioFrame? {
+        if (isTransition) {
+            val clock = age.toFloat()
+            val flight = if (reducedMotion) 0.25f else clock / timing.revealStart.coerceAtLeast(1)
+            return WarpEnvelope.flight(flight, timing.reveal(clock))
+        }
+        return returnStarted?.let { primingAudio((age - it).toFloat()) }
+    }
+
+    internal fun primingAudio(elapsed: Float): WarpAudioFrame =
+        WarpEnvelope.prime(elapsed / twinkleHoldTicks.coerceIn(1, 20))
+
     fun cancelReturn() {
         returnStarted = null
         choiceSent = false
@@ -71,14 +80,9 @@ class BetweenScreen(
 
     override fun init() {
         actionButtons.clear()
-        if (!soundPlayed && !config.muteCinematics && config.playCinematics) {
+        if (!isTransition && !soundPlayed && config.playCinematics) {
             soundPlayed = true
-            val sound = if (isTransition) config.returnSound else config.deathSound
-            ResourceLocation.tryParse(sound)?.let { key ->
-                BuiltInRegistries.SOUND_EVENT.getOptional(key).ifPresent {
-                    Minecraft.getInstance().soundManager.play(SimpleSoundInstance.forUI(it, 1f))
-                }
-            }
+            RequiemAudio.play(config.deathSound)
         }
         if (isTransition) {
             addAction(dreamButton((width - 82).coerceAtLeast(0), 10, minOf(72, width.coerceAtLeast(1)), label("skip")) { onClose() })
@@ -146,6 +150,10 @@ class BetweenScreen(
 
     override fun tick() {
         age++
+        if (isTransition && !soundPlayed && age >= timing.revealStart.coerceAtLeast(1)) {
+            soundPlayed = true
+            RequiemAudio.play(config.returnSound, 0.20)
+        }
         returnStarted?.let {
             if (!choiceSent && age - it >= twinkleHoldTicks) sendChoice(Decision.RETURN)
         }

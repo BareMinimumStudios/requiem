@@ -1,0 +1,5 @@
+{
+  "button_hover": { "sounds": ["requiem_cinematics:button_hover"] },
+  "button_click": { "sounds": ["requiem_cinematics:button_click"] },
+  "warp": { "sounds": ["requiem_cinematics:warp"] }
+}

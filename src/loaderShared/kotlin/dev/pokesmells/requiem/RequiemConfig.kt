@@ -48,6 +48,15 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var warpTicks = 88
     @NonSync var revealTicks = 22
     @NonSync var cameraSettle = true
+    @NonSync var buttonHoverSound = "requiem_cinematics:button_hover"
+    @NonSync var buttonHoverVolume = 0.24
+    @NonSync var buttonClickSound = "requiem_cinematics:button_click"
+    @NonSync var buttonClickVolume = 0.36
+    @NonSync var warpSound = "requiem_cinematics:warp"
+    @NonSync var warpVolume = 0.48
+    @NonSync var warpStartPitch = 0.72
+    @NonSync var warpPeakPitch = 1.28
+
     @NonSync var deathSound = "minecraft:block.amethyst_block.resonate"
     @NonSync var returnSound = "minecraft:block.amethyst_block.chime"
 

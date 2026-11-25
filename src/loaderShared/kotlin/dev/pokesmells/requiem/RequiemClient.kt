@@ -37,6 +37,13 @@ object RequiemClient {
 
     fun tick() {
         val minecraft = Minecraft.getInstance()
+        advancePresentation(minecraft)
+        val frame = (minecraft.screen as? BetweenScreen)?.warpAudioFrame()
+            ?: handoff?.let { it.screen.primingAudio(it.ticks.toFloat()) }
+        RequiemAudio.updateWarp(frame)
+    }
+
+    private fun advancePresentation(minecraft: Minecraft) {
         handoff?.let {
             if (minecraft.connection !== it.connection) {
                 handoff = null
