@@ -1,8 +1,9 @@
 package dev.pokesmells.requiem
 
-import com.mojang.math.Axis
+import com.mojang.blaze3d.vertex.VertexConsumer
+import net.minecraft.client.renderer.RenderType
+import org.joml.Matrix4f
 import net.minecraft.client.gui.GuiGraphics
-import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.random.Random
@@ -32,6 +33,8 @@ internal class DreamParticles {
         val limit = if (stretch > 0f) anchorCount * 3 else anchorCount
         val halfWidth = width * 0.5f
         val halfHeight = height * 0.5f
+        val vertices = graphics.bufferSource().getBuffer(RenderType.gui())
+        val pose = graphics.pose().last().pose()
 
         for (index in 0 until limit) {
             val star = stars[index]
@@ -51,7 +54,7 @@ internal class DreamParticles {
 
             val wave = if (reducedMotion) 0.78f else
                 (1f + sin(star.phase * TAU + skyClock * star.rate)) * 0.5f
-            val flare = wave * wave
+            val flare = smoothStep(wave) * wave
             val stillGlow = 0.30f + 0.70f * flare
             val flightGlow = 0.60f + star.phase * 0.40f
             val brightness = if (anchored) {
@@ -80,9 +83,18 @@ internal class DreamParticles {
                     brightness * (1f - stretch), rays)
             }
             if (stretch > 0f) {
-                val length = hypot(x, y) * (1f - tailRatio)
+                val radius = hypot(x, y).coerceAtLeast(0.001f)
                 val trailOpacity = if (anchored) brightness * stretch else brightness
-                drawTrail(graphics, headX, headY, atan2(y, x), length, layer.size, tint, trailOpacity)
+                val tailX = halfWidth + x * tailRatio
+                val tailY = halfHeight + y * tailRatio
+                val acrossX = -y / radius
+                val acrossY = x / radius
+                if (layer.size > 1) {
+                    drawTrail(vertices, pose, headX, headY, tailX, tailY, acrossX, acrossY,
+                        1.48f, tint, trailOpacity * 0.22f)
+                }
+                drawTrail(vertices, pose, headX, headY, tailX, tailY, acrossX, acrossY,
+                    layer.size * 0.48f, mixRgb(tint, 0xF2F8FF, 0.24f), trailOpacity)
             }
         }
     }
@@ -104,19 +116,17 @@ internal class DreamParticles {
     }
 
     private fun drawTrail(
-        graphics: GuiGraphics, x: Float, y: Float, angle: Float, length: Float, size: Int, tint: Int, opacity: Float,
+        vertices: VertexConsumer, pose: Matrix4f, x: Float, y: Float, tailX: Float, tailY: Float,
+        acrossX: Float, acrossY: Float, width: Float, tint: Int, opacity: Float,
     ) {
-        val tail = -length.toInt().coerceAtLeast(1)
-        val pose = graphics.pose()
-        pose.pushPose()
-        pose.translate(x, y, 0f)
-        pose.mulPose(Axis.ZP.rotation(angle))
-        if (size > 1) graphics.fill(tail, -1, size + 2, size + 1, tinted(tint, opacity * 0.27f))
-        graphics.fill(tail, 0, tail / 2, 1, tinted(tint, opacity * 0.25f))
-        graphics.fill(tail / 2, 0, tail / 5, 1, tinted(tint, opacity * 0.60f))
-        graphics.fill(tail / 5, 0, size, size, tinted(tint, opacity))
-        graphics.fill(0, 0, 1, 1, tinted(0xF2F8FF, opacity * 0.82f))
-        pose.popPose()
+        val edgeX = acrossX * width
+        val edgeY = acrossY * width
+        val tip = tinted(tint, 0f)
+        val head = tinted(tint, opacity)
+        vertices.addVertex(pose, tailX + edgeX * 0.14f, tailY + edgeY * 0.14f, 0f).setColor(tip)
+        vertices.addVertex(pose, x + edgeX, y + edgeY, 0f).setColor(head)
+        vertices.addVertex(pose, x - edgeX, y - edgeY, 0f).setColor(head)
+        vertices.addVertex(pose, tailX - edgeX * 0.14f, tailY - edgeY * 0.14f, 0f).setColor(tip)
     }
 }
 
