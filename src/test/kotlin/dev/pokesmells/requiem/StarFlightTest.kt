@@ -6,6 +6,22 @@ import kotlin.test.assertTrue
 
 class StarFlightTest {
     @Test
+    fun recyclingIsStaggeredAndInvisibleAtTheWrap() {
+        val positions = List(96) { StarFlight.initialDepth(it, 96, 0.5f) }
+        for (travel in listOf(0f, 1.5f, 3.9f, 7.0f)) {
+            val wrapped = positions.map { StarFlight.depth(it, travel) }
+            for (slice in 0 until 8) {
+                val start = StarFlight.NEAR + (StarFlight.FAR - StarFlight.NEAR) * slice / 8f
+                val end = StarFlight.NEAR + (StarFlight.FAR - StarFlight.NEAR) * (slice + 1) / 8f
+                assertEquals(12, wrapped.count { it >= start && it < end })
+            }
+        }
+        assertEquals(0f, StarFlight.visibility(StarFlight.NEAR))
+        assertEquals(0f, StarFlight.visibility(StarFlight.FAR))
+        assertEquals(1f, StarFlight.visibility(2f))
+    }
+
+    @Test
     fun speedRampsThenTravelContinuesAtCruise() {
         assertEquals(0f, StarFlight.speed(0f))
         assertTrue(StarFlight.speed(9f) < StarFlight.speed(18f))

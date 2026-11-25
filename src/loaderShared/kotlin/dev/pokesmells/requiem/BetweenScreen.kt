@@ -157,12 +157,10 @@ class BetweenScreen(
         val windup = returnStarted?.let { smoothStep((clock - it) / (twinkleHoldTicks - 1).coerceAtLeast(1)) } ?: 0f
         val darkness = if (view.intro) 1f - reveal else emergence
         val flightTicks = if (view.intro && !reducedMotion) clock else null
-        val veil = if (flightTicks == null) 0f else smoothStep((flightTicks - 5f) / 18f)
         val controls = if (view.intro) 1f - reveal else
             (if (reducedMotion) 1f else smoothStep((clock - 4f) / 12f)) * (1f - windup)
 
         graphics.fillGradient(0, 0, width, height, tinted(0x03040c, darkness), tinted(config.skyColor, darkness))
-        graphics.fill(0, 0, width, height, tinted(0x02030a, veil * darkness * 0.88f))
         if (!config.plainInterface) {
             val starlight = if (view.intro) (1f - reveal) * (1f - reveal) else darkness
             drawParticles(graphics, width, height, starClockOffset + clock, clock, starlight, flightTicks)

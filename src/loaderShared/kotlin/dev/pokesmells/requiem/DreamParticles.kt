@@ -8,14 +8,14 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 internal class DreamParticles {
-    private data class Layer(val depth: Float, val brightness: Float, val size: Int)
-    private data class Star(val x: Float, val y: Float, val phase: Float, val rate: Float, val depthOffset: Float)
+    private data class Layer(val brightness: Float, val size: Int)
+    private data class Star(val x: Float, val y: Float, val phase: Float, val rate: Float)
 
-    private val layers = listOf(Layer(4.1f, 0.63f, 1), Layer(2.9f, 0.82f, 1), Layer(1.6f, 0.98f, 2))
+    private val layers = listOf(Layer(0.63f, 1), Layer(0.82f, 1), Layer(0.98f, 2))
     private val stars = Random(2871).let { random ->
         List(1800) {
             Star((random.nextFloat() - 0.5f) * 2.15f, (random.nextFloat() - 0.5f) * 2.15f,
-                random.nextFloat(), 0.08f + random.nextFloat() * 0.13f, random.nextFloat() - 0.5f)
+                random.nextFloat(), 0.08f + random.nextFloat() * 0.13f)
         }
     }
 
@@ -24,58 +24,70 @@ internal class DreamParticles {
         opacity: Float, flightTicks: Float?, reducedMotion: Boolean, count: Int,
         color: Int, accent: Int, colorful: Boolean,
     ) {
-        val total = count.coerceIn(0, 600)
-        if (opacity <= 0f || total == 0) return
-        val travel = flightTicks?.let(StarFlight::distance) ?: 0f
-        val speed = flightTicks?.let(StarFlight::speed) ?: 0f
-        val warpBlend = smoothStep(speed / 0.19f)
-        val limit = if (warpBlend > 0f) total * 3 else total
+        val countAtRest = count.coerceIn(0, 600)
+        if (opacity <= 0f || countAtRest == 0) return
+        val blend = flightTicks?.let { smoothStep(it / 15f) } ?: 0f
+        if (blend < 1f) {
+            drawSky(graphics, width, height, skyClock, entranceClock, opacity * (1f - blend), reducedMotion,
+                countAtRest, color, accent, colorful)
+        }
+        if (flightTicks != null && blend > 0f) {
+            drawFlight(graphics, width, height, flightTicks, opacity * blend, countAtRest * 3, color, accent)
+        }
+    }
+
+    private fun drawSky(
+        graphics: GuiGraphics, width: Int, height: Int, clock: Float, entranceClock: Float, opacity: Float,
+        reducedMotion: Boolean, count: Int, color: Int, accent: Int, colorful: Boolean,
+    ) {
         val centerX = width * 0.5f
         val centerY = height * 0.5f
+        for (index in 0 until count) {
+            val star = stars[index]
+            val layer = layers[index % layers.size]
+            val wave = if (reducedMotion) 0.78f else (1f + sin(star.phase * TAU + clock * star.rate)) * 0.5f
+            val flare = wave * wave
+            val entrance = if (reducedMotion) 1f else smoothStep((entranceClock - star.phase * 15f) / 13f)
+            val tint = if (colorful && index % 17 < 3) {
+                when (index % 17) {
+                    0 -> 0x72EBCD
+                    1 -> 0xFFD9A1
+                    else -> 0xDCB3FF
+                }
+            } else if (index % 4 == 0) accent else color
+            val brightness = opacity * entrance * layer.brightness * (0.30f + 0.70f * flare)
+            val rays = if (index % 8 == 0 && !reducedMotion) smoothStep((flare - 0.38f) / 0.62f) else 0f
+            drawStar(graphics, (centerX * (1f + star.x)).toInt(), (centerY * (1f + star.y)).toInt(),
+                layer.size, tint, brightness, rays)
+        }
+    }
+
+    private fun drawFlight(
+        graphics: GuiGraphics, width: Int, height: Int, clock: Float, opacity: Float,
+        count: Int, color: Int, accent: Int,
+    ) {
+        val travel = StarFlight.distance(clock)
+        val speed = StarFlight.speed(clock)
         val halfWidth = width * 0.5f
         val halfHeight = height * 0.5f
+        for (index in 0 until count) {
+            val star = stars[index]
+            val layer = layers[index % layers.size]
+            val depth = StarFlight.depth(StarFlight.initialDepth(index, count, star.phase), travel)
+            val exposure = 0.025f + speed * (1.9f + star.phase * 2.5f)
+            val projection = 2.65f / depth
+            val x = star.x * halfWidth * projection
+            val y = star.y * halfHeight * projection
+            val tailRatio = depth / (depth + exposure)
+            if (kotlin.math.abs(x * tailRatio) > halfWidth + 3f ||
+                kotlin.math.abs(y * tailRatio) > halfHeight + 3f
+            ) continue
 
-        for ((layerIndex, layer) in layers.withIndex()) {
-            for (index in layerIndex until limit step layers.size) {
-                val star = stars[index]
-                val wave = if (reducedMotion) 0.78f else (1f + sin(star.phase * TAU + skyClock * star.rate)) * 0.5f
-                val flare = wave * wave
-                val weight = if (index < total) 1f else warpBlend
-                val entrance = if (reducedMotion || flightTicks != null) 1f
-                    else smoothStep((entranceClock - star.phase * 15f) / 13f)
-                val colorAtRest = if (colorful && index % 17 < 3) {
-                    when (index % 17) {
-                        0 -> 0x72EBCD
-                        1 -> 0xFFD9A1
-                        else -> 0xDCB3FF
-                    }
-                } else if (index % 4 == 0) accent else color
-                val tint = mixRgb(colorAtRest, if (index % 4 == 0) accent else color, warpBlend)
-                val brightness = opacity * weight * entrance * layer.brightness *
-                    (0.30f + 0.70f * (flare + (1f - flare) * warpBlend * 0.78f))
-                val initialDepth = layer.depth + star.depthOffset
-                val depth = StarFlight.depth(initialDepth, travel)
-                val ratio = initialDepth / depth
-                val x = star.x * halfWidth * ratio
-                val y = star.y * halfHeight * ratio
-                val farFade = if (initialDepth - travel < StarFlight.NEAR) smoothStep((StarFlight.FAR - depth) / 0.70f) else 1f
-                val glow = brightness * farFade
-                if (glow < 0.009f) continue
-
-                if (speed < 0.012f) {
-                    if (kotlin.math.abs(x) > halfWidth + 5f || kotlin.math.abs(y) > halfHeight + 5f) continue
-                    val rays = if (index % 8 == 0 && !reducedMotion) smoothStep((flare - 0.38f) / 0.62f) else 0f
-                    drawStar(graphics, (centerX + x).toInt(), (centerY + y).toInt(), layer.size, tint, glow, rays)
-                } else {
-                    val exposure = speed * (1.5f + star.phase * 2.1f)
-                    val trailingRatio = depth / (depth + exposure)
-                    if (kotlin.math.abs(x * trailingRatio) > halfWidth + 4f ||
-                        kotlin.math.abs(y * trailingRatio) > halfHeight + 4f
-                    ) continue
-                    val length = hypot(x, y) * (1f - trailingRatio)
-                    drawTrail(graphics, centerX + x, centerY + y, atan2(y, x), length, layer.size, tint, glow)
-                }
-            }
+            val brightness = opacity * StarFlight.visibility(depth) * (0.60f + star.phase * 0.40f) * layer.brightness
+            if (brightness < 0.008f) continue
+            val tint = if (index % 4 == 0) accent else color
+            val length = hypot(x, y) * (1f - tailRatio)
+            drawTrail(graphics, halfWidth + x, halfHeight + y, atan2(y, x), length, layer.size, tint, brightness)
         }
     }
 
@@ -109,19 +121,6 @@ internal class DreamParticles {
         graphics.fill(tail / 5, 0, size, size, tinted(tint, opacity))
         graphics.fill(0, 0, 1, 1, tinted(0xF2F8FF, opacity * 0.82f))
         pose.popPose()
-    }
-
-    private fun mixRgb(from: Int, to: Int, fraction: Float): Int {
-        val red = channel(from, to, 16, fraction)
-        val green = channel(from, to, 8, fraction)
-        val blue = channel(from, to, 0, fraction)
-        return (red shl 16) or (green shl 8) or blue
-    }
-
-    private fun channel(from: Int, to: Int, shift: Int, fraction: Float): Int {
-        val start = (from shr shift) and 255
-        val end = (to shr shift) and 255
-        return (start + (end - start) * fraction).toInt()
     }
 }
 
