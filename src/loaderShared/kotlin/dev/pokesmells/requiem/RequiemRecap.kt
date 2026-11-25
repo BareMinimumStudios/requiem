@@ -13,10 +13,10 @@ import java.util.UUID
 import kotlin.math.roundToInt
 
 internal object RequiemRecap {
-    private const val MAX_FRAMES = 3
-    private const val MAX_EDGE = 256
-    private const val SAMPLE_NS = 1_100_000_000L
-    private const val MAX_AGE_NS = 4_000_000_000L
+    private const val MAX_FRAMES = 12
+    private const val MAX_EDGE = 128
+    private const val SAMPLE_NS = 850_000_000L
+    private const val MAX_AGE_NS = 12_000_000_000L
 
     private class Frame(val image: NativeImage, val time: Long) {
         var texture: ResourceLocation? = null
@@ -96,21 +96,29 @@ internal object RequiemRecap {
     fun render(graphics: GuiGraphics, id: UUID, clock: Float, revealStart: Int) {
         if (transaction != id || frames.isEmpty() || !enabled()) return
         val client = Minecraft.getInstance()
-        val duration = minOf(62f, (revealStart - 8f).coerceAtLeast(0f))
+        val duration = minOf(460f, revealStart * 0.87f)
         if (clock >= duration || duration < 14f) {
             clear(client)
             return
         }
-        val slice = duration / frames.size
-        val position = (clock / slice).toInt().coerceIn(frames.indices)
-        val phase = clock / slice - position
-        val alpha = smoothStep(phase / 0.22f) * (1f - smoothStep((phase - 0.78f) / 0.22f))
+        val progress = (clock / duration).coerceIn(0f, 1f)
+        val cursor = frames.size * progress * (0.28f + 0.72f * progress)
+        val position = cursor.toInt().coerceIn(frames.indices)
+        val mix = smoothStep((cursor - position) / 0.22f)
+        val visibility = smoothStep(progress / 0.05f) * (1f - smoothStep((progress - 0.90f) / 0.10f))
+        if (position > 0 && mix < 1f) {
+            drawMemory(graphics, client, frames[position - 1], progress, visibility * (1f - mix))
+        }
+        drawMemory(graphics, client, frames[position], progress, visibility * if (position == 0) 1f else mix)
+    }
+
+    private fun drawMemory(graphics: GuiGraphics, client: Minecraft, frame: Frame, progress: Float, alpha: Float) {
         if (alpha < 0.01f) return
-        val frame = frames[position]
         val texture = frame.texture ?: client.textureManager.register("requiem_recap", DynamicTexture(frame.image))
             .also { frame.texture = it }
-        val scale = minOf(graphics.guiWidth() * 0.62f / frame.image.width,
-            graphics.guiHeight() * 0.53f / frame.image.height)
+        val recession = 1f - 0.40f * smoothStep(progress)
+        val scale = recession * minOf(graphics.guiWidth() * 0.72f / frame.image.width,
+            graphics.guiHeight() * 0.60f / frame.image.height)
         val width = (frame.image.width * scale).roundToInt().coerceAtLeast(1)
         val height = (frame.image.height * scale).roundToInt().coerceAtLeast(1)
         val x = (graphics.guiWidth() - width) / 2

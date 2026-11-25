@@ -7,7 +7,7 @@ import kotlin.test.assertTrue
 class CinematicTimingTest {
     @Test
     fun shortSettingsRetainTimeForTheWarpAndReducedMotionOnlyFades() {
-        assertEquals(CinematicTiming(152, 36), CinematicTiming.forSettings(false, 152, 36))
+        assertEquals(CinematicTiming(580, 52), CinematicTiming.forSettings(false, 580, 52))
         assertEquals(CinematicTiming(102, 60), CinematicTiming.forSettings(false, 102, 100))
         assertEquals(CinematicTiming(24, 12), CinematicTiming.forSettings(false, 24, 22))
         assertEquals(CinematicTiming(12, 12), CinematicTiming.forSettings(true, 48, 18))

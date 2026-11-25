@@ -35,7 +35,7 @@ Stars that pass the camera reappear in the distance, and the flight keeps
 moving through the world reveal. `twinkleHoldTicks` controls the pause on the
 star field after selecting Return to Existence. `warpTicks` controls the flight
 and reveal after the destination is ready. `revealTicks` controls the fade into
-first person and defaults to 36 ticks (1.8 seconds), within the 152-tick
+first person and defaults to 52 ticks (2.6 seconds), within the 580-tick
 sequence. Toggle `colorfulStars` for the
 occasional colored flares.
 The themed buttons ease in on hover and mark keyboard focus with bright
@@ -47,10 +47,10 @@ Reduced motion uses instant button highlights, holds
 particles still and uses a short fade with no camera motion. A world can
 enable the first-join sequence independently of its death rules.
 
-When `showLastMoments` is enabled, the return cinematic shows up to three
+When `showLastMoments` is enabled, the return cinematic shows up to twelve
 recent first-person world frames before the reveal. Their feathered edges
-blend into the star field. Each is at most
-256 pixels on its longest edge. Frames stay in client memory. Gameplay
+blend into the star field. The images crossfade faster and recede as the
+flight progresses. Each is at most 128 pixels on its longest edge. Frames stay in client memory. Gameplay
 interface elements such as the HUD are excluded.
 
 ## Client audio
