@@ -22,7 +22,8 @@ LIMITED:3, HARDCORE, UNLIMITED or DISABLED. A UUID override takes priority.
 Changing the configured starting allocation leaves existing records intact.
 On integrated servers a ban policy places the player in spectator instead.
 Use /requiem release <online player> <lives> to release a player and set their
-limited-mode allocation. Dedicated-server bans also require a vanilla pardon.
+limited-mode allocation. The dedicated-server ban policy writes to Minecraft's
+vanilla ban list.
 
 The client settings control the title, subtitle, choice labels, palette,
 star count, warp duration and sounds. Plain interface uses Minecraft's standard
@@ -57,4 +58,11 @@ Published Requiem JARs require neither Incapacitated nor Cardinal Components.
   counted as one PvP death (three to two), and allowed a second resurrection.
   The other client remained connected through both deaths and received no
   Requiem screen or life deduction.
+- On both dedicated loaders, a fresh server process opened the same world
+  after a deferred death. The player rejoined with the original death UUID
+  and two remaining lives, then resurrected in Adventure mode.
+- The final-death confirmation was exercised for all three policies on both
+  loaders. Spectators could move. Limbo rejected movement and camera changes,
+  corrected the client position, and ended when an operator ran
+  `/requiem release`. Ban wrote a vanilla ban entry and denied reconnect.
 - Other optional mod combinations remain separate test cases.
