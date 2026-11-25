@@ -29,11 +29,13 @@ The client settings control the title, subtitle, choice labels, palette,
 particle count, warp duration, reveal duration, camera settling and sounds.
 The life count is hidden by default and can be enabled with
 `showLivesRemaining`.
-The three particle layers are generated on the client without frame capture.
-They shimmer into view, gather when Return to Existence is selected, and
-accelerate into streaks while the destination loads. The live world fades in
-while the remaining trails disappear. Toggle `colorfulStars` for the occasional
-colored flares.
+The three star layers are generated on the client without frame capture.
+The stars twinkle in place before accelerating toward the camera in perspective.
+Stars that pass the camera reappear in the distance, and the flight keeps
+moving through the world reveal. `twinkleHoldTicks` controls the pause on the
+star field after selecting Return to Existence. `warpTicks` controls the flight
+and reveal after the destination is ready. Toggle `colorfulStars` for the
+occasional colored flares.
 Plain interface uses Minecraft's standard buttons. Reduced motion holds
 particles still and uses a short fade with no camera motion. A world can
 enable the first-join sequence independently of its death rules.

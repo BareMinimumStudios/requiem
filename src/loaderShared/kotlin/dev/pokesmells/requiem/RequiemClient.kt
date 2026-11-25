@@ -58,12 +58,13 @@ object RequiemClient {
         }
         if (minecraft.level == null || minecraft.player == null || minecraft.screen is ReceivingLevelScreen) return
         pending = null
+        val starClock = handoff?.let { it.screen.starClockAtHandoff(it.ticks.toFloat()) } ?: 0f
         handoff = null
         val config = RequiemSettings.config
         if (next.payload.intro && !config.playCinematics) {
             if (minecraft.screen is BetweenScreen) minecraft.setScreen(null)
             return
         }
-        minecraft.setScreen(BetweenScreen(next.payload, next.send))
+        minecraft.setScreen(BetweenScreen(next.payload, next.send, starClock))
     }
 }

@@ -15,6 +15,7 @@ import kotlin.math.ceil
 class BetweenScreen(
     private val view: DeathView,
     private val send: (DeathChoice) -> Unit,
+    private val starClockOffset: Float = 0f,
 ) : Screen(label("screen")) {
     private val particles = DreamParticles()
     private val config get() = RequiemSettings.config
@@ -29,6 +30,7 @@ class BetweenScreen(
     private var livesLabel: Component? = null
     private val reducedMotion = !config.playCinematics || config.reducedMotion || config.plainInterface
     private val timing = CinematicTiming.forSettings(reducedMotion, config.warpTicks, config.revealTicks)
+    private val twinkleHoldTicks = config.twinkleHoldTicks.coerceIn(0, 80)
 
     private fun sceneClock(partialTick: Float): Float = (age - 1).coerceAtLeast(0) + partialTick.coerceIn(0f, 1f)
 
@@ -42,17 +44,22 @@ class BetweenScreen(
         children().filterIsInstance<Button>().forEach { it.active = true }
     }
 
+    fun starClockAtHandoff(elapsed: Float): Float = starClockOffset + (returnStarted ?: age) + elapsed
+
     fun renderHandoff(graphics: GuiGraphics, clock: Float) {
         val width = graphics.guiWidth()
         val height = graphics.guiHeight()
         graphics.fillGradient(0, 0, width, height, 0xff03040c.toInt(), tinted(config.skyColor, 1f))
-        drawParticles(graphics, width, height, clock, 1f, WARP_HANDOFF)
+        drawParticles(graphics, width, height, starClockAtHandoff(clock), 30f, 1f, null)
     }
 
     @Suppress("DEPRECATION")
-    private fun drawParticles(graphics: GuiGraphics, width: Int, height: Int, clock: Float, opacity: Float, warp: Float?) {
+    private fun drawParticles(
+        graphics: GuiGraphics, width: Int, height: Int, skyClock: Float, entranceClock: Float,
+        opacity: Float, flightTicks: Float?,
+    ) {
         graphics.drawManaged {
-            particles.draw(graphics, width, height, clock, opacity, warp, reducedMotion,
+            particles.draw(graphics, width, height, skyClock, entranceClock, opacity, flightTicks, reducedMotion,
                 config.starCount, config.starColor, config.accentColor, config.colorfulStars)
         }
     }
@@ -120,7 +127,7 @@ class BetweenScreen(
     private fun choose(choice: Decision) {
         if (choiceSent || returnStarted != null) return
         children().filterIsInstance<Button>().forEach { it.active = false }
-        if (choice == Decision.RETURN && !reducedMotion) {
+        if (choice == Decision.RETURN && !reducedMotion && twinkleHoldTicks > 0) {
             returnStarted = age
             RequiemClient.beginReturn(this)
         } else {
@@ -136,7 +143,7 @@ class BetweenScreen(
     override fun tick() {
         age++
         returnStarted?.let {
-            if (!choiceSent && age - it >= RETURN_WINDUP) sendChoice(Decision.RETURN)
+            if (!choiceSent && age - it >= twinkleHoldTicks) sendChoice(Decision.RETURN)
         }
         if (view.intro && age > timing.duration) onClose()
         if (minecraft?.level == null) onClose()
@@ -147,15 +154,10 @@ class BetweenScreen(
         val clock = sceneClock(renderPartial)
         val reveal = if (view.intro) timing.reveal(clock) else 0f
         val emergence = if (view.intro || reducedMotion) 1f else smoothStep(clock / 19f)
-        val windup = returnStarted?.let { smoothStep((clock - it) / (RETURN_WINDUP - 1)) } ?: 0f
+        val windup = returnStarted?.let { smoothStep((clock - it) / (twinkleHoldTicks - 1).coerceAtLeast(1)) } ?: 0f
         val darkness = if (view.intro) 1f - reveal else emergence
-        val warp = when {
-            reducedMotion -> null
-            view.intro -> WARP_HANDOFF + (1f - WARP_HANDOFF) * (clock / timing.revealStart).coerceIn(0f, 1f)
-            returnStarted != null -> WARP_HANDOFF * windup
-            else -> null
-        }
-        val veil = if (warp == null) 0f else smoothStep((warp - 0.42f) / 0.58f)
+        val flightTicks = if (view.intro && !reducedMotion) clock else null
+        val veil = if (flightTicks == null) 0f else smoothStep((flightTicks - 5f) / 18f)
         val controls = if (view.intro) 1f - reveal else
             (if (reducedMotion) 1f else smoothStep((clock - 4f) / 12f)) * (1f - windup)
 
@@ -163,7 +165,7 @@ class BetweenScreen(
         graphics.fill(0, 0, width, height, tinted(0x02030a, veil * darkness * 0.88f))
         if (!config.plainInterface) {
             val starlight = if (view.intro) (1f - reveal) * (1f - reveal) else darkness
-            drawParticles(graphics, width, height, clock, starlight, warp)
+            drawParticles(graphics, width, height, starClockOffset + clock, clock, starlight, flightTicks)
         }
         children().filterIsInstance<Button>().forEach {
             it.visible = controls > 0.05f
@@ -203,6 +205,3 @@ private class DreamButton(
 }
 
 private fun label(key: String, vararg args: Any) = Component.translatable("requiem_cinematics.$key", *args)
-
-private const val RETURN_WINDUP = 10
-private const val WARP_HANDOFF = 0.24f

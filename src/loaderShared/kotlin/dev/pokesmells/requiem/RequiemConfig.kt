@@ -42,10 +42,11 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var accentColor = 0x819BEF
     @NonSync var textColor = 0xEFF3FF
     @NonSync var titleScale = 1.5
-    @NonSync var starCount = 240
+    @NonSync var starCount = 320
     @NonSync var colorfulStars = true
-    @NonSync var warpTicks = 48
-    @NonSync var revealTicks = 18
+    @NonSync var twinkleHoldTicks = 20
+    @NonSync var warpTicks = 88
+    @NonSync var revealTicks = 22
     @NonSync var cameraSettle = true
     @NonSync var deathSound = "minecraft:block.amethyst_block.resonate"
     @NonSync var returnSound = "minecraft:block.amethyst_block.chime"

@@ -2,77 +2,78 @@ package dev.pokesmells.requiem
 
 import com.mojang.math.Axis
 import net.minecraft.client.gui.GuiGraphics
-import kotlin.math.cos
+import kotlin.math.atan2
+import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.random.Random
 
 internal class DreamParticles {
-    private data class Layer(val radius: Float, val drift: Float, val brightness: Float, val size: Int)
-    private data class Star(val angle: Float, val radius: Float, val phase: Float, val speed: Float)
+    private data class Layer(val depth: Float, val brightness: Float, val size: Int)
+    private data class Star(val x: Float, val y: Float, val phase: Float, val rate: Float, val depthOffset: Float)
 
-    private val layers = listOf(
-        Layer(0.79f, 0.0014f, 0.55f, 1),
-        Layer(1.04f, 0.0031f, 0.75f, 1),
-        Layer(1.29f, 0.0062f, 0.97f, 2),
-    )
+    private val layers = listOf(Layer(4.1f, 0.63f, 1), Layer(2.9f, 0.82f, 1), Layer(1.6f, 0.98f, 2))
     private val stars = Random(2871).let { random ->
-        List(600) {
-            Star(random.nextFloat() * TAU, 0.08f + random.nextFloat() * 0.90f,
-                random.nextFloat(), 0.5f + random.nextFloat() * 0.5f)
+        List(1800) {
+            Star((random.nextFloat() - 0.5f) * 2.15f, (random.nextFloat() - 0.5f) * 2.15f,
+                random.nextFloat(), 0.08f + random.nextFloat() * 0.13f, random.nextFloat() - 0.5f)
         }
     }
 
     fun draw(
-        graphics: GuiGraphics, width: Int, height: Int, time: Float, opacity: Float,
-        warp: Float?, reducedMotion: Boolean, count: Int, color: Int, accent: Int, colorful: Boolean,
+        graphics: GuiGraphics, width: Int, height: Int, skyClock: Float, entranceClock: Float,
+        opacity: Float, flightTicks: Float?, reducedMotion: Boolean, count: Int,
+        color: Int, accent: Int, colorful: Boolean,
     ) {
-        val total = count.coerceIn(0, stars.size)
+        val total = count.coerceIn(0, 600)
         if (opacity <= 0f || total == 0) return
-        val clock = if (reducedMotion) 0f else time
+        val travel = flightTicks?.let(StarFlight::distance) ?: 0f
+        val speed = flightTicks?.let(StarFlight::speed) ?: 0f
+        val warpBlend = smoothStep(speed / 0.19f)
+        val limit = if (warpBlend > 0f) total * 3 else total
         val centerX = width * 0.5f
-        val centerY = height * 0.46f
-        val radius = maxOf(width, height) * 0.69f
-        val gather = if (warp == null) 0f else smoothStep(warp / 0.39f)
-        val acceleration = if (warp == null) 0f else smoothStep((warp - 0.30f) / 0.70f)
-        val warpDensity = if (warp == null) 0f else smoothStep((warp - 0.33f) / 0.32f)
-        val limit = if (warpDensity > 0f) minOf(stars.size, total * 2) else total
-        if (warp != null && !reducedMotion) {
-            val glow = smoothStep(warp / 0.36f) * (1f - smoothStep((warp - 0.48f) / 0.52f))
-            drawGatherGlow(graphics, centerX.toInt(), centerY.toInt(), accent, glow * opacity)
-        }
+        val centerY = height * 0.5f
+        val halfWidth = width * 0.5f
+        val halfHeight = height * 0.5f
 
         for ((layerIndex, layer) in layers.withIndex()) {
             for (index in layerIndex until limit step layers.size) {
                 val star = stars[index]
-                val wave = (1f + sin(star.phase * TAU + clock * (0.11f + star.speed * 0.12f))) * 0.5f
-                val sparkle = wave * wave * wave
-                val weight = if (index < total) 1f else warpDensity
-                val entrance = if (reducedMotion || warp != null) 1f
-                    else smoothStep((clock - star.phase * 15f) / 9f)
-                val tint = if (warp != null) {
-                    if (index % 4 == 0) accent else color
-                } else if (colorful && index % 13 < 3) {
-                    when (index % 13) {
-                        0 -> 0x7EE8CB
-                        1 -> 0xF3CDA2
-                        else -> 0xD9BBF6
+                val wave = if (reducedMotion) 0.78f else (1f + sin(star.phase * TAU + skyClock * star.rate)) * 0.5f
+                val flare = wave * wave
+                val weight = if (index < total) 1f else warpBlend
+                val entrance = if (reducedMotion || flightTicks != null) 1f
+                    else smoothStep((entranceClock - star.phase * 15f) / 13f)
+                val colorAtRest = if (colorful && index % 17 < 3) {
+                    when (index % 17) {
+                        0 -> 0x72EBCD
+                        1 -> 0xFFD9A1
+                        else -> 0xDCB3FF
                     }
                 } else if (index % 4 == 0) accent else color
-                val brightness = opacity * weight * entrance * layer.brightness * (0.27f + 0.73f * sparkle)
-                val drift = clock * layer.drift * (1f - gather)
-                val angle = star.angle + drift + gather * (0.27f + layerIndex * 0.12f)
-                val orbit = star.radius * radius * layer.radius
-                val distance = orbit * (1f - gather * 0.78f) *
-                    (1f + acceleration * acceleration * (4f + 3f * star.speed))
-                val x = centerX + cos(angle) * distance
-                val y = centerY + sin(angle) * distance * (0.72f + acceleration * 0.28f)
-                if (warp == null || reducedMotion || acceleration < 0.025f) {
-                    val lit = if (reducedMotion) 0.70f * opacity * layer.brightness else brightness
-                    val flare = if (index % 7 == 0 && !reducedMotion) smoothStep((sparkle - 0.53f) / 0.47f) else 0f
-                    drawStar(graphics, x.toInt(), y.toInt(), layer.size, tint, lit, flare)
+                val tint = mixRgb(colorAtRest, if (index % 4 == 0) accent else color, warpBlend)
+                val brightness = opacity * weight * entrance * layer.brightness *
+                    (0.30f + 0.70f * (flare + (1f - flare) * warpBlend * 0.78f))
+                val initialDepth = layer.depth + star.depthOffset
+                val depth = StarFlight.depth(initialDepth, travel)
+                val ratio = initialDepth / depth
+                val x = star.x * halfWidth * ratio
+                val y = star.y * halfHeight * ratio
+                val farFade = if (initialDepth - travel < StarFlight.NEAR) smoothStep((StarFlight.FAR - depth) / 0.70f) else 1f
+                val glow = brightness * farFade
+                if (glow < 0.009f) continue
+
+                if (speed < 0.012f) {
+                    if (kotlin.math.abs(x) > halfWidth + 5f || kotlin.math.abs(y) > halfHeight + 5f) continue
+                    val rays = if (index % 8 == 0 && !reducedMotion) smoothStep((flare - 0.38f) / 0.62f) else 0f
+                    drawStar(graphics, (centerX + x).toInt(), (centerY + y).toInt(), layer.size, tint, glow, rays)
                 } else {
-                    val length = (2f + acceleration * acceleration * distance * (0.07f + star.speed * 0.17f)).coerceAtMost(radius * 0.18f)
-                    drawTrail(graphics, x, y, angle, length, layer.size, tint, brightness)
+                    val exposure = speed * (1.5f + star.phase * 2.1f)
+                    val trailingRatio = depth / (depth + exposure)
+                    if (kotlin.math.abs(x * trailingRatio) > halfWidth + 4f ||
+                        kotlin.math.abs(y * trailingRatio) > halfHeight + 4f
+                    ) continue
+                    val length = hypot(x, y) * (1f - trailingRatio)
+                    drawTrail(graphics, centerX + x, centerY + y, atan2(y, x), length, layer.size, tint, glow)
                 }
             }
         }
@@ -82,42 +83,45 @@ internal class DreamParticles {
         graphics: GuiGraphics, x: Int, y: Int, size: Int, tint: Int, opacity: Float, flare: Float,
     ) {
         if (size > 1 || flare > 0f) {
-            graphics.fill(x - 2, y - 2, x + size + 2, y + size + 2, tinted(tint, opacity * 0.13f))
+            graphics.fill(x - 2, y - 2, x + size + 2, y + size + 2, tinted(tint, opacity * 0.15f))
         }
         if (flare > 0f) {
-            val spread = 2 + (flare * 3f).toInt()
-            val ray = tinted(tint, opacity * flare * 0.57f)
-            graphics.fill(x - spread, y, x + size + spread, y + 1, ray)
-            graphics.fill(x, y - spread, x + 1, y + size + spread, ray)
+            val reach = 2 + (flare * 4f).toInt()
+            val ray = tinted(tint, opacity * flare * 0.74f)
+            graphics.fill(x - reach, y, x + size + reach, y + 1, ray)
+            graphics.fill(x, y - reach, x + 1, y + size + reach, ray)
         }
         graphics.fill(x, y, x + size, y + size, tinted(tint, opacity))
+        if (flare > 0.4f) graphics.fill(x, y, x + 1, y + 1, tinted(0xF6F9FF, opacity * flare))
     }
 
     private fun drawTrail(
         graphics: GuiGraphics, x: Float, y: Float, angle: Float, length: Float, size: Int, tint: Int, opacity: Float,
     ) {
-        val tail = -length.toInt()
+        val tail = -length.toInt().coerceAtLeast(1)
         val pose = graphics.pose()
         pose.pushPose()
         pose.translate(x, y, 0f)
         pose.mulPose(Axis.ZP.rotation(angle))
-        if (size > 1) graphics.fill(tail, -1, size + 2, size + 1, tinted(tint, opacity * 0.18f))
-        graphics.fill(tail, 0, tail / 2, 1, tinted(tint, opacity * 0.22f))
-        graphics.fill(tail / 2, 0, tail / 5, 1, tinted(tint, opacity * 0.53f))
+        if (size > 1) graphics.fill(tail, -1, size + 2, size + 1, tinted(tint, opacity * 0.27f))
+        graphics.fill(tail, 0, tail / 2, 1, tinted(tint, opacity * 0.25f))
+        graphics.fill(tail / 2, 0, tail / 5, 1, tinted(tint, opacity * 0.60f))
         graphics.fill(tail / 5, 0, size, size, tinted(tint, opacity))
-        graphics.fill(0, 0, 1, 1, tinted(0xF5F6FF, opacity * 0.80f))
+        graphics.fill(0, 0, 1, 1, tinted(0xF2F8FF, opacity * 0.82f))
         pose.popPose()
     }
 
-    private fun drawGatherGlow(graphics: GuiGraphics, x: Int, y: Int, tint: Int, intensity: Float) {
-        for (step in 1..5) {
-            val radius = step * 5
-            for (offset in -radius..radius step 2) {
-                val halfWidth = radius - kotlin.math.abs(offset)
-                graphics.fill(x - halfWidth, y + offset, x + halfWidth + 1, y + offset + 2,
-                    tinted(tint, intensity * 0.018f))
-            }
-        }
+    private fun mixRgb(from: Int, to: Int, fraction: Float): Int {
+        val red = channel(from, to, 16, fraction)
+        val green = channel(from, to, 8, fraction)
+        val blue = channel(from, to, 0, fraction)
+        return (red shl 16) or (green shl 8) or blue
+    }
+
+    private fun channel(from: Int, to: Int, shift: Int, fraction: Float): Int {
+        val start = (from shr shift) and 255
+        val end = (to shr shift) and 255
+        return (start + (end - start) * fraction).toInt()
     }
 }
 
