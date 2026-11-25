@@ -1,6 +1,5 @@
 package dev.pokesmells.requiem
 
-import com.mojang.math.Axis
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
@@ -10,23 +9,23 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
-import kotlin.math.cos
-import kotlin.math.atan2
-import kotlin.math.sin
-import kotlin.random.Random
 
 class BetweenScreen(
     private val view: DeathView,
     private val send: (DeathChoice) -> Unit,
 ) : Screen(label("screen")) {
-    private data class Star(val x: Float, val y: Float, val phase: Double)
-    private val stars = Random(2871).let { random ->
-        List(600) { Star(random.nextFloat(), random.nextFloat(), random.nextDouble() * 6.283) }
-    }
+    private val particles = DreamParticles()
     private val config get() = RequiemSettings.config
     private var age = 0
-    private val reducedMotion get() = !config.playCinematics || config.reducedMotion || config.plainInterface
-    private val duration get() = if (reducedMotion) 12 else config.warpTicks.coerceIn(24, 160)
+    private var skip: Button? = null
+    private val reducedMotion = !config.playCinematics || config.reducedMotion || config.plainInterface
+    private val timing = CinematicTiming.forSettings(reducedMotion, config.warpTicks, config.revealTicks)
+
+    private fun sceneClock(partialTick: Float): Float = (age - 1).coerceAtLeast(0) + partialTick.coerceIn(0f, 1f)
+
+    internal fun cameraTilt(partialTick: Float): Float =
+        if (!view.intro || reducedMotion || !config.cameraSettle) 0f
+        else -4f * (1f - timing.reveal(sceneClock(partialTick)))
 
     override fun isPauseScreen() = false
     override fun shouldCloseOnEsc() = view.intro
@@ -41,8 +40,8 @@ class BetweenScreen(
             }
         }
         if (view.intro) {
-            addRenderableWidget(Button.builder(label("skip")) { onClose() }
-                .bounds(width / 2 - 50, height - 30, 100, 20).build())
+            skip = addRenderableWidget(Button.builder(label("skip")) { onClose() }
+                .bounds(width - 82, 10, 72, 20).build())
             return
         }
         var top = height / 2 + 20
@@ -75,52 +74,29 @@ class BetweenScreen(
 
     override fun tick() {
         age++
-        if (view.intro && age >= duration) onClose()
+        if (view.intro && age > timing.duration) onClose()
         if (minecraft?.level == null) onClose()
     }
 
     override fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val clock = age + partialTick
-        val sky = 0xff000000.toInt() or (config.skyColor and 0xffffff)
+        val clock = sceneClock(partialTick)
+        val timing = timing
+        val reveal = if (view.intro) timing.reveal(clock) else 0f
+        val emergence = if (view.intro || reducedMotion) 1f else smoothStep(clock / 14f)
+        val darkness = if (view.intro) 1f - reveal else emergence
+        val warp = if (view.intro && !reducedMotion) (clock / timing.revealStart).coerceIn(0f, 1f) else null
+        val veil = if (warp != null) smoothStep((warp - 0.72f) / 0.28f) else 0f
         val textColor = 0xff000000.toInt() or (config.textColor and 0xffffff)
-        val opacity = if (view.intro) {
-            ((duration - clock) / (if (reducedMotion) 12f else 15f)).coerceIn(0f, 1f)
-        } else 1f
-        val alpha = (opacity * 255).toInt() shl 24
-        graphics.fillGradient(0, 0, width, height, alpha or 0x070814, alpha or (sky and 0xffffff))
+
+        graphics.fillGradient(0, 0, width, height, tinted(0x070814, darkness), tinted(config.skyColor, darkness))
         if (!config.plainInterface) {
-            val centerX = width * 0.5f
-            val centerY = height * 0.5f
-            val warpProgress = (clock / duration).coerceIn(0f, 1f)
-            val warping = view.intro && !reducedMotion
-            val count = config.starCount.coerceIn(0, stars.size)
-            for (index in 0 until count) {
-                val star = stars[index]
-                val twinkle = if (reducedMotion) 0.75 else 0.65 + sin(star.phase + clock / 28) * 0.25
-                val color = ((opacity * twinkle * 255).toInt() shl 24) or (config.starColor and 0xffffff)
-                val drift = if (reducedMotion) 0.0 else cos(star.phase + clock / 75) * 3
-                val rawX = star.x * width + drift.toFloat()
-                val rawY = star.y * height
-                if (warping) {
-                    val angle = atan2(rawY - centerY, rawX - centerX)
-                    val initialDepth = (star.phase / (Math.PI * 2)).toFloat()
-                    val depth = (initialDepth + warpProgress * (0.7f + star.y * 0.5f)) % 1f
-                    val distance = depth * depth * width * 0.65f
-                    val length = (3 + depth * depth * warpProgress * width * 0.14f).toInt()
-                    val pose = graphics.pose()
-                    pose.pushPose()
-                    pose.translate(centerX, centerY, 0f)
-                    pose.mulPose(Axis.ZP.rotation(angle))
-                    val tip = distance.toInt()
-                    graphics.fill((tip - length).coerceAtLeast(0), 0, tip + 1, 1, color)
-                    pose.popPose()
-                } else {
-                    val x = rawX.toInt()
-                    val y = rawY.toInt()
-                    graphics.fill(x, y, x + 1, y + 1, color)
-                }
-            }
+            particles.draw(graphics, width, height, clock, darkness * (1f - veil), warp, reducedMotion,
+                config.starCount, config.starColor, config.accentColor)
         }
+        if (view.intro && !reducedMotion) {
+            graphics.fill(0, 0, width, height, tinted(0x03040b, veil * darkness))
+        }
+        skip?.setAlpha(darkness)
         if (!view.intro) {
             val scale = config.titleScale.coerceIn(0.75, 3.0).toFloat()
             val pose = graphics.pose()
@@ -157,4 +133,3 @@ private class DreamButton(
 }
 
 private fun label(key: String, vararg args: Any) = Component.translatable("requiem_cinematics.$key", *args)
-

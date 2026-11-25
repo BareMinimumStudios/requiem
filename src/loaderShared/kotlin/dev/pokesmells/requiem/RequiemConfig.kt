@@ -43,6 +43,8 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var titleScale = 1.5
     @NonSync var starCount = 240
     @NonSync var warpTicks = 48
+    @NonSync var revealTicks = 18
+    @NonSync var cameraSettle = true
     @NonSync var deathSound = "minecraft:block.amethyst_block.resonate"
     @NonSync var returnSound = "minecraft:block.amethyst_block.chime"
 

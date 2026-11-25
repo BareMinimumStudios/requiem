@@ -26,8 +26,10 @@ limited-mode allocation. The dedicated-server ban policy writes to Minecraft's
 vanilla ban list.
 
 The client settings control the title, subtitle, choice labels, palette,
-star count, warp duration and sounds. Plain interface uses Minecraft's standard
-buttons. Reduced motion holds stars still and shortens the fade. A world can
+particle count, warp duration, reveal duration, camera settling and sounds.
+The three particle layers are generated on the client without frame capture.
+Plain interface uses Minecraft's standard buttons. Reduced motion holds
+particles still and uses a short fade with no camera motion. A world can
 enable the first-join sequence independently of its death rules.
 
 ## Incapacitated development runs
@@ -75,3 +77,6 @@ Published Requiem JARs require neither Incapacitated nor Cardinal Components.
   username. PvP, zombie, and fall damage each produced the corresponding
   attribution, with one life spent when enabled and zero when excluded.
 - Other optional mod combinations remain separate test cases.
+- Hidden Fabric and NeoForge clients completed death, defer, reconnect, and
+  return with the layered animation. The camera settled during the reveal and
+  gameplay resumed in first person.
