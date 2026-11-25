@@ -1,6 +1,8 @@
 package dev.pokesmells.requiem
 
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.DeathScreen
 import net.minecraft.client.gui.screens.ReceivingLevelScreen
 import net.minecraft.client.multiplayer.ClientPacketListener
 
@@ -11,7 +13,22 @@ object RequiemClient {
         val send: (DeathChoice) -> Unit,
     )
 
+    private data class Handoff(val connection: ClientPacketListener, val screen: BetweenScreen, var ticks: Int = 0)
+
     private var pending: Presentation? = null
+    private var handoff: Handoff? = null
+
+    fun beginReturn(screen: BetweenScreen) {
+        val connection = Minecraft.getInstance().connection ?: return
+        handoff = Handoff(connection, screen)
+    }
+
+    fun renderReturnHandoff(graphics: GuiGraphics): Boolean {
+        val current = handoff ?: return false
+        if (Minecraft.getInstance().connection !== current.connection) return false
+        current.screen.renderHandoff(graphics, current.ticks.toFloat())
+        return true
+    }
 
     fun receive(payload: DeathView, send: (DeathChoice) -> Unit) {
         val connection = Minecraft.getInstance().connection ?: return
@@ -19,14 +36,29 @@ object RequiemClient {
     }
 
     fun tick() {
-        val next = pending ?: return
+        advancePresentation()
+    }
+
+    private fun advancePresentation() {
         val minecraft = Minecraft.getInstance()
+        handoff?.let {
+            if (minecraft.connection !== it.connection) {
+                handoff = null
+            } else if (++it.ticks > 240) {
+                handoff = null
+                it.screen.cancelReturn()
+            } else if (pending == null && (minecraft.screen == null || minecraft.screen is DeathScreen)) {
+                minecraft.setScreen(it.screen)
+            }
+        }
+        val next = pending ?: return
         if (minecraft.connection !== next.connection) {
             pending = null
             return
         }
         if (minecraft.level == null || minecraft.player == null || minecraft.screen is ReceivingLevelScreen) return
         pending = null
+        handoff = null
         val config = RequiemSettings.config
         if (next.payload.intro && !config.playCinematics) {
             if (minecraft.screen is BetweenScreen) minecraft.setScreen(null)

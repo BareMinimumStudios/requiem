@@ -19,7 +19,8 @@ class BetweenScreen(
     private val particles = DreamParticles()
     private val config get() = RequiemSettings.config
     private var age = 0
-    private var skip: Button? = null
+    private var returnStarted: Int? = null
+    private var choiceSent = false
     private var titleY = 0
     private var titleScale = 1f
     private var subtitleY = 0
@@ -35,6 +36,27 @@ class BetweenScreen(
         if (!view.intro || reducedMotion || !config.cameraSettle) 0f
         else -4f * (1f - timing.reveal(sceneClock(partialTick)))
 
+    fun cancelReturn() {
+        returnStarted = null
+        choiceSent = false
+        children().filterIsInstance<Button>().forEach { it.active = true }
+    }
+
+    fun renderHandoff(graphics: GuiGraphics, clock: Float) {
+        val width = graphics.guiWidth()
+        val height = graphics.guiHeight()
+        graphics.fillGradient(0, 0, width, height, 0xff03040c.toInt(), tinted(config.skyColor, 1f))
+        drawParticles(graphics, width, height, clock, 1f, WARP_HANDOFF)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun drawParticles(graphics: GuiGraphics, width: Int, height: Int, clock: Float, opacity: Float, warp: Float?) {
+        graphics.drawManaged {
+            particles.draw(graphics, width, height, clock, opacity, warp, reducedMotion,
+                config.starCount, config.starColor, config.accentColor, config.colorfulStars)
+        }
+    }
+
     override fun isPauseScreen() = false
     override fun shouldCloseOnEsc() = view.intro
 
@@ -48,7 +70,7 @@ class BetweenScreen(
             }
         }
         if (view.intro) {
-            skip = addRenderableWidget(Button.builder(label("skip")) { onClose() }
+            addRenderableWidget(Button.builder(label("skip")) { onClose() }
                 .bounds(width - 82, 10, 72, 20).build())
             return
         }
@@ -96,36 +118,59 @@ class BetweenScreen(
     }
 
     private fun choose(choice: Decision) {
+        if (choiceSent || returnStarted != null) return
         children().filterIsInstance<Button>().forEach { it.active = false }
+        if (choice == Decision.RETURN && !reducedMotion) {
+            returnStarted = age
+            RequiemClient.beginReturn(this)
+        } else {
+            sendChoice(choice)
+        }
+    }
+
+    private fun sendChoice(choice: Decision) {
+        choiceSent = true
         send(DeathChoice(view.transaction, choice))
     }
 
     override fun tick() {
         age++
+        returnStarted?.let {
+            if (!choiceSent && age - it >= RETURN_WINDUP) sendChoice(Decision.RETURN)
+        }
         if (view.intro && age > timing.duration) onClose()
         if (minecraft?.level == null) onClose()
     }
 
     override fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
-        val clock = sceneClock(partialTick)
-        val timing = timing
+        val renderPartial = minecraft?.timer?.getGameTimeDeltaPartialTick(false) ?: partialTick
+        val clock = sceneClock(renderPartial)
         val reveal = if (view.intro) timing.reveal(clock) else 0f
-        val emergence = if (view.intro || reducedMotion) 1f else smoothStep(clock / 14f)
+        val emergence = if (view.intro || reducedMotion) 1f else smoothStep(clock / 19f)
+        val windup = returnStarted?.let { smoothStep((clock - it) / (RETURN_WINDUP - 1)) } ?: 0f
         val darkness = if (view.intro) 1f - reveal else emergence
-        val warp = if (view.intro && !reducedMotion) (clock / timing.revealStart).coerceIn(0f, 1f) else null
-        val veil = if (warp != null) smoothStep((warp - 0.72f) / 0.28f) else 0f
-        val textColor = 0xff000000.toInt() or (config.textColor and 0xffffff)
+        val warp = when {
+            reducedMotion -> null
+            view.intro -> WARP_HANDOFF + (1f - WARP_HANDOFF) * (clock / timing.revealStart).coerceIn(0f, 1f)
+            returnStarted != null -> WARP_HANDOFF * windup
+            else -> null
+        }
+        val veil = if (warp == null) 0f else smoothStep((warp - 0.42f) / 0.58f)
+        val controls = if (view.intro) 1f - reveal else
+            (if (reducedMotion) 1f else smoothStep((clock - 4f) / 12f)) * (1f - windup)
 
-        graphics.fillGradient(0, 0, width, height, tinted(0x070814, darkness), tinted(config.skyColor, darkness))
+        graphics.fillGradient(0, 0, width, height, tinted(0x03040c, darkness), tinted(config.skyColor, darkness))
+        graphics.fill(0, 0, width, height, tinted(0x02030a, veil * darkness * 0.88f))
         if (!config.plainInterface) {
-            particles.draw(graphics, width, height, clock, darkness * (1f - veil), warp, reducedMotion,
-                config.starCount, config.starColor, config.accentColor)
+            val starlight = if (view.intro) (1f - reveal) * (1f - reveal) else darkness
+            drawParticles(graphics, width, height, clock, starlight, warp)
         }
-        if (view.intro && !reducedMotion) {
-            graphics.fill(0, 0, width, height, tinted(0x03040b, veil * darkness))
+        children().filterIsInstance<Button>().forEach {
+            it.visible = controls > 0.05f
+            it.setAlpha(controls)
         }
-        skip?.setAlpha(darkness)
-        if (!view.intro) {
+        if (!view.intro && controls > 0.05f) {
+            val textColor = tinted(config.textColor, controls)
             val pose = graphics.pose()
             pose.pushPose()
             pose.translate((width / 2).toFloat(), titleY.toFloat(), 0f)
@@ -148,13 +193,16 @@ private class DreamButton(
 ) : Button(x, y, width, 20, message, { action() }, DEFAULT_NARRATION) {
     override fun renderWidget(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
         val focused = active && isHoveredOrFocused
-        val border = (if (focused) 0xff000000.toInt() else 0x80000000.toInt()) or (accent and 0xffffff)
-        val base = if (focused) 0xe0303e67.toInt() else 0xe019203b.toInt()
+        val border = tinted(accent, alpha * if (focused) 1f else 0.52f)
+        val base = tinted(if (focused) 0x303e67 else 0x19203b, alpha * 0.88f)
         graphics.fill(x, y, x + width, y + height, border)
-        graphics.fillGradient(x + 1, y + 1, x + width - 1, y + height - 1, base, 0xe012172e.toInt())
+        graphics.fillGradient(x + 1, y + 1, x + width - 1, y + height - 1, base, tinted(0x12172e, alpha * 0.88f))
         val font = Minecraft.getInstance().font
-        renderScrollingString(graphics, font, 6, if (active) 0xffeff3ff.toInt() else 0xffa3acc8.toInt())
+        renderScrollingString(graphics, font, 6, tinted(if (active) 0xEFF3FF else 0xA3ACC8, alpha))
     }
 }
 
 private fun label(key: String, vararg args: Any) = Component.translatable("requiem_cinematics.$key", *args)
+
+private const val RETURN_WINDUP = 10
+private const val WARP_HANDOFF = 0.24f

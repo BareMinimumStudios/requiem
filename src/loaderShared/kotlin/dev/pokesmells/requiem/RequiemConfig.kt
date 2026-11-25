@@ -43,6 +43,7 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var textColor = 0xEFF3FF
     @NonSync var titleScale = 1.5
     @NonSync var starCount = 240
+    @NonSync var colorfulStars = true
     @NonSync var warpTicks = 48
     @NonSync var revealTicks = 18
     @NonSync var cameraSettle = true

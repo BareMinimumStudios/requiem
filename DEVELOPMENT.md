@@ -30,6 +30,10 @@ particle count, warp duration, reveal duration, camera settling and sounds.
 The life count is hidden by default and can be enabled with
 `showLivesRemaining`.
 The three particle layers are generated on the client without frame capture.
+They shimmer into view, gather when Return to Existence is selected, and
+accelerate into streaks while the destination loads. The live world fades in
+while the remaining trails disappear. Toggle `colorfulStars` for the occasional
+colored flares.
 Plain interface uses Minecraft's standard buttons. Reduced motion holds
 particles still and uses a short fade with no camera motion. A world can
 enable the first-join sequence independently of its death rules.
