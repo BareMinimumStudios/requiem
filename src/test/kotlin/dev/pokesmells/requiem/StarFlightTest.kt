@@ -6,6 +6,19 @@ import kotlin.test.assertTrue
 
 class StarFlightTest {
     @Test
+    fun anchoredStarsStartAtTheirOriginalScreenPositionsAndStretchOutward() {
+        for (index in 0 until 320) {
+            val depth = StarFlight.anchorDepth(index, 320, 0.5f)
+            assertEquals(1f, StarFlight.anchorProjection(depth, 0f))
+            assertTrue(StarFlight.anchorProjection(depth, StarFlight.distance(8f)) > 1f)
+            assertTrue(StarFlight.anchorProjection(depth, StarFlight.distance(12f)) >
+                StarFlight.anchorProjection(depth, StarFlight.distance(8f)))
+        }
+        assertEquals(0f, StarFlight.stretch(0f))
+        assertEquals(1f, StarFlight.stretch(18f))
+    }
+
+    @Test
     fun recyclingIsStaggeredAndInvisibleAtTheWrap() {
         val positions = List(96) { StarFlight.initialDepth(it, 96, 0.5f) }
         for (travel in listOf(0f, 1.5f, 3.9f, 7.0f)) {

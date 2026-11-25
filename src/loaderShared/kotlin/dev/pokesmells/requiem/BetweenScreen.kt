@@ -77,8 +77,13 @@ class BetweenScreen(
             }
         }
         if (view.intro) {
-            addRenderableWidget(Button.builder(label("skip")) { onClose() }
-                .bounds(width - 82, 10, 72, 20).build())
+            val skip = label("skip")
+            val button = if (config.plainInterface) {
+                Button.builder(skip) { onClose() }.bounds(width - 82, 10, 72, 20).build()
+            } else {
+                DreamButton(width - 82, 10, 72, skip, config.accentColor) { onClose() }
+            }
+            addRenderableWidget(button)
             return
         }
         val textWidth = minOf(310, (width - 24).coerceAtLeast(1))
@@ -162,8 +167,8 @@ class BetweenScreen(
 
         graphics.fillGradient(0, 0, width, height, tinted(0x03040c, darkness), tinted(config.skyColor, darkness))
         if (!config.plainInterface) {
-            val starlight = if (view.intro) (1f - reveal) * (1f - reveal) else darkness
-            drawParticles(graphics, width, height, starClockOffset + clock, clock, starlight, flightTicks)
+            val starlight = if (view.intro) 1f - smoothStep((reveal - 0.16f) / 0.84f) else darkness
+            drawParticles(graphics, width, height, starClockOffset + clock, starClockOffset + clock, starlight, flightTicks)
         }
         children().filterIsInstance<Button>().forEach {
             it.visible = controls > 0.05f

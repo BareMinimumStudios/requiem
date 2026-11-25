@@ -24,71 +24,76 @@ internal class DreamParticles {
         opacity: Float, flightTicks: Float?, reducedMotion: Boolean, count: Int,
         color: Int, accent: Int, colorful: Boolean,
     ) {
-        val countAtRest = count.coerceIn(0, 600)
-        if (opacity <= 0f || countAtRest == 0) return
-        val blend = flightTicks?.let { smoothStep(it / 15f) } ?: 0f
-        if (blend < 1f) {
-            drawSky(graphics, width, height, skyClock, entranceClock, opacity * (1f - blend), reducedMotion,
-                countAtRest, color, accent, colorful)
-        }
-        if (flightTicks != null && blend > 0f) {
-            drawFlight(graphics, width, height, flightTicks, opacity * blend, countAtRest * 3, color, accent)
-        }
-    }
+        val anchorCount = count.coerceIn(0, 600)
+        if (opacity <= 0f || anchorCount == 0) return
+        val travel = flightTicks?.let(StarFlight::distance) ?: 0f
+        val speed = flightTicks?.let(StarFlight::speed) ?: 0f
+        val stretch = flightTicks?.let(StarFlight::stretch) ?: 0f
+        val limit = if (stretch > 0f) anchorCount * 3 else anchorCount
+        val halfWidth = width * 0.5f
+        val halfHeight = height * 0.5f
 
-    private fun drawSky(
-        graphics: GuiGraphics, width: Int, height: Int, clock: Float, entranceClock: Float, opacity: Float,
-        reducedMotion: Boolean, count: Int, color: Int, accent: Int, colorful: Boolean,
-    ) {
-        val centerX = width * 0.5f
-        val centerY = height * 0.5f
-        for (index in 0 until count) {
+        for (index in 0 until limit) {
             val star = stars[index]
             val layer = layers[index % layers.size]
-            val wave = if (reducedMotion) 0.78f else (1f + sin(star.phase * TAU + clock * star.rate)) * 0.5f
+            val anchored = index < anchorCount
+            val initialDepth = if (anchored) StarFlight.anchorDepth(index, anchorCount, star.phase)
+                else StarFlight.initialDepth(index - anchorCount, anchorCount * 2, star.phase)
+            val depth = StarFlight.depth(initialDepth, travel)
+            val projection = if (anchored) StarFlight.anchorProjection(initialDepth, travel) else 2.65f / depth
+            val x = star.x * halfWidth * projection
+            val y = star.y * halfHeight * projection
+            val exposure = speed * (1.9f + star.phase * 2.5f)
+            val tailRatio = depth / (depth + exposure)
+            if (kotlin.math.abs(x * tailRatio) > halfWidth + 6f ||
+                kotlin.math.abs(y * tailRatio) > halfHeight + 6f
+            ) continue
+
+            val wave = if (reducedMotion) 0.78f else
+                (1f + sin(star.phase * TAU + skyClock * star.rate)) * 0.5f
             val flare = wave * wave
-            val entrance = if (reducedMotion) 1f else smoothStep((entranceClock - star.phase * 15f) / 13f)
-            val tint = if (colorful && index % 17 < 3) {
+            val stillGlow = 0.30f + 0.70f * flare
+            val flightGlow = 0.60f + star.phase * 0.40f
+            val brightness = if (anchored) {
+                val entrance = if (reducedMotion) 1f else smoothStep((entranceClock - star.phase * 15f) / 13f)
+                val visibility = 1f + (StarFlight.visibility(depth) - 1f) * stretch
+                opacity * layer.brightness * entrance * visibility * (stillGlow + (flightGlow - stillGlow) * stretch)
+            } else {
+                opacity * layer.brightness * StarFlight.visibility(depth) * flightGlow * stretch
+            }
+            if (brightness < 0.008f) continue
+
+            val flightTint = if (index % 4 == 0) accent else color
+            val restTint = if (colorful && index % 17 < 3) {
                 when (index % 17) {
                     0 -> 0x72EBCD
                     1 -> 0xFFD9A1
                     else -> 0xDCB3FF
                 }
-            } else if (index % 4 == 0) accent else color
-            val brightness = opacity * entrance * layer.brightness * (0.30f + 0.70f * flare)
-            val rays = if (index % 8 == 0 && !reducedMotion) smoothStep((flare - 0.38f) / 0.62f) else 0f
-            drawStar(graphics, (centerX * (1f + star.x)).toInt(), (centerY * (1f + star.y)).toInt(),
-                layer.size, tint, brightness, rays)
+            } else flightTint
+            val tint = if (anchored) mixRgb(restTint, flightTint, stretch) else flightTint
+            val headX = halfWidth + x
+            val headY = halfHeight + y
+            if (anchored && stretch < 1f) {
+                val rays = if (index % 8 == 0 && !reducedMotion) smoothStep((flare - 0.38f) / 0.62f) else 0f
+                drawStar(graphics, headX.toInt(), headY.toInt(), layer.size, tint,
+                    brightness * (1f - stretch), rays)
+            }
+            if (stretch > 0f) {
+                val length = hypot(x, y) * (1f - tailRatio)
+                val trailOpacity = if (anchored) brightness * stretch else brightness
+                drawTrail(graphics, headX, headY, atan2(y, x), length, layer.size, tint, trailOpacity)
+            }
         }
     }
 
-    private fun drawFlight(
-        graphics: GuiGraphics, width: Int, height: Int, clock: Float, opacity: Float,
-        count: Int, color: Int, accent: Int,
-    ) {
-        val travel = StarFlight.distance(clock)
-        val speed = StarFlight.speed(clock)
-        val halfWidth = width * 0.5f
-        val halfHeight = height * 0.5f
-        for (index in 0 until count) {
-            val star = stars[index]
-            val layer = layers[index % layers.size]
-            val depth = StarFlight.depth(StarFlight.initialDepth(index, count, star.phase), travel)
-            val exposure = 0.025f + speed * (1.9f + star.phase * 2.5f)
-            val projection = 2.65f / depth
-            val x = star.x * halfWidth * projection
-            val y = star.y * halfHeight * projection
-            val tailRatio = depth / (depth + exposure)
-            if (kotlin.math.abs(x * tailRatio) > halfWidth + 3f ||
-                kotlin.math.abs(y * tailRatio) > halfHeight + 3f
-            ) continue
-
-            val brightness = opacity * StarFlight.visibility(depth) * (0.60f + star.phase * 0.40f) * layer.brightness
-            if (brightness < 0.008f) continue
-            val tint = if (index % 4 == 0) accent else color
-            val length = hypot(x, y) * (1f - tailRatio)
-            drawTrail(graphics, halfWidth + x, halfHeight + y, atan2(y, x), length, layer.size, tint, brightness)
+    private fun mixRgb(from: Int, to: Int, blend: Float): Int {
+        fun channel(shift: Int): Int {
+            val a = (from shr shift) and 255
+            val b = (to shr shift) and 255
+            return (a + (b - a) * blend).toInt()
         }
+        return (channel(16) shl 16) or (channel(8) shl 8) or channel(0)
     }
 
     private fun drawStar(

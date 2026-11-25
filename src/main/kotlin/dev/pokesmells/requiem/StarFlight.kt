@@ -17,6 +17,14 @@ internal object StarFlight {
         return SPEED * (rampDistance + (ticks - RAMP_TICKS).coerceAtLeast(0f))
     }
 
+    fun stretch(ticks: Float): Float = smoothStep(ticks / 18f)
+
+    fun anchorDepth(index: Int, count: Int, jitter: Float): Float =
+        1.05f + (FAR - 1.17f) * ((index + jitter) / count)
+
+    fun anchorProjection(initial: Float, travel: Float): Float =
+        if (travel == 0f) 1f else initial / depth(initial, travel)
+
     fun initialDepth(index: Int, count: Int, jitter: Float): Float =
         NEAR + (FAR - NEAR) * ((index + jitter) / count)
 
