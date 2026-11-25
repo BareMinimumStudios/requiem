@@ -57,7 +57,7 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var buttonClickSound = "requiem_cinematics:button_click"
     @NonSync var buttonClickVolume = 0.36
     @NonSync var warpSound = "requiem_cinematics:warp"
-    @NonSync var warpVolume = 0.48
+    @NonSync var warpVolume = 0.82
     @NonSync var warpStartPitch = 0.88
     @NonSync var warpPeakPitch = 1.12
     @NonSync var warpTailTicks = 28

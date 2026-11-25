@@ -63,10 +63,9 @@ choices immediately.
 
 Use `buttonHoverSound`, `buttonClickSound`, and `warpSound` for sound-event IDs.
 Each cue has a separate volume from 0 to 1. An empty ID silences that cue.
-The warp loop layers a low rumble, a grainy rush and reverberant overtones.
-It begins
-quietly and swells as the stars stretch into lightspeed, rising from
-`warpStartPitch` toward `warpPeakPitch`. The fade blends into world audio.
+The bundled return track streams once at its recorded pitch. Configured
+replacement sounds can loop and sweep from `warpStartPitch` toward
+`warpPeakPitch`. The warp audio fades into world sounds during the reveal.
 `warpTailTicks` controls the trail after the reveal. It defaults to 28 ticks.
 Set it to 0 to end the warp with the reveal. `returnSound` is the short
 accent at the start of the reveal. Set `muteCinematics` to silence all

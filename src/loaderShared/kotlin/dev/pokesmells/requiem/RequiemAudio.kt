@@ -12,8 +12,9 @@ import net.minecraft.util.RandomSource
 
 internal object RequiemAudio {
     private var lastHover = 0L
-    private var warp: WarpLoop? = null
+    private var warp: WarpPlayback? = null
     private var warpTailTicks = 0
+    private var playedBundledCue = false
     var worldGain = 1f
         private set
 
@@ -63,6 +64,7 @@ internal object RequiemAudio {
             if (!audioEnabled || !connected) warp?.release(6, shorten = true)
             else warp?.release(if (warpTailTicks > 0) warpTailTicks else 6)
             warpTailTicks = 0
+            if (frame == null) playedBundledCue = false
             if (warp?.isStopped == true) warp = null
             return
         }
@@ -70,13 +72,15 @@ internal object RequiemAudio {
         val target = (config.warpVolume.coerceIn(0.0, 1.0) * frame.gain).toFloat()
         val start = config.warpStartPitch.coerceIn(0.5, 2.0).toFloat()
         val peak = config.warpPeakPitch.coerceIn(0.5, 2.0).toFloat()
-        val pitch = start + (peak - start) * frame.pitchProgress
+        val bundled = config.warpSound == "$MOD_ID:warp"
+        val pitch = if (bundled) 1f else start + (peak - start) * frame.pitchProgress
         if (warp == null || warp?.isStopped == true || warp?.isReleasing == true) {
-            if (target <= 0f) return
+            if (target <= 0f || bundled && playedBundledCue) return
             val manager = Minecraft.getInstance().soundManager
             val event = soundEvent(manager, config.warpSound) ?: return
             warp?.release(6, shorten = true)
-            warp = WarpLoop(event, pitch).also(manager::play)
+            warp = WarpPlayback(event, pitch, repeat = !bundled).also(manager::play)
+            if (bundled) playedBundledCue = true
         }
         warp?.aim(target, pitch)
     }
@@ -88,7 +92,7 @@ internal object RequiemAudio {
         return SoundEvent.createVariableRangeEvent(location)
     }
 
-    private class WarpLoop(event: SoundEvent, initialPitch: Float) :
+    private class WarpPlayback(event: SoundEvent, initialPitch: Float, repeat: Boolean) :
         AbstractTickableSoundInstance(event, SoundSource.MASTER, RandomSource.create()) {
         private var targetVolume = 0f
         private var targetPitch = initialPitch
@@ -98,7 +102,7 @@ internal object RequiemAudio {
         val isReleasing get() = releaseTicks > 0
 
         init {
-            looping = true
+            looping = repeat
             relative = true
             attenuation = SoundInstance.Attenuation.NONE
             volume = 0f
