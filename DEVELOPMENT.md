@@ -48,5 +48,13 @@ Published Requiem JARs require neither Incapacitated nor Cardinal Components.
 - Chose Later on both loaders, reopened the world, confirmed the same
   transaction and balance, then resurrected in first person in the original
   Adventure mode. Captured The Between and the warp from the game framebuffer.
-- Dedicated multiplayer gameplay, Incapacitated give-up and overkill, and other
-  mod combinations remain separate test cases.
+- On both dedicated 1.21.1 loaders, two clients connected over loopback with
+  Incapacitated 2.0.1. A downed player sent Incapacitated's give-up packet and
+  spent one life (four to three). Choose Later disconnected that client.
+  Reconnecting to the same server restored the pending transaction, and
+  resurrection returned the player to Adventure mode with three lives.
+- A 120-damage hit attributed to the other player bypassed incapacitation,
+  counted as one PvP death (three to two), and allowed a second resurrection.
+  The other client remained connected through both deaths and received no
+  Requiem screen or life deduction.
+- Other optional mod combinations remain separate test cases.
