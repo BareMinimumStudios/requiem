@@ -20,7 +20,6 @@ object RequiemServer {
     private val deliveries = mutableMapOf<UUID, Delivery>()
     lateinit var send: (ServerPlayer, DeathView) -> Unit
 
-    @JvmStatic
     fun onDeath(player: ServerPlayer, source: DamageSource) {
         val server = player.server
         val data = RequiemData.get(server)
@@ -41,7 +40,6 @@ object RequiemServer {
         server.overworld().dataStorage.save()
     }
 
-    @JvmStatic
     fun allowVanillaRespawn(player: ServerPlayer): Boolean {
         val data = RequiemData.get(player.server)
         val record = data.record(player.uuid)
@@ -51,7 +49,6 @@ object RequiemServer {
         return true
     }
 
-    @JvmStatic
     fun isConfined(player: ServerPlayer): Boolean {
         val record = RequiemData.get(player.server).record(player.uuid)
         return record.finalPolicy == FinalPolicy.LIMBO || record.pending != null && player.isAlive
@@ -66,7 +63,7 @@ object RequiemServer {
         } else if (record.pending == null && !record.introSeen) {
             data.update(player.uuid, record.copy(introSeen = true))
             if (RequiemSettings.config.firstJoinCinematic) {
-                send(player, DeathView(UUID.randomUUID(), -1, DeathCause.ENVIRONMENT, false, false, true))
+                send(player, DeathView(UUID.randomUUID(), -1, DeathCause.ENVIRONMENT, false, false, DeathPresentation.TRANSITION))
             }
         }
     }
@@ -118,44 +115,42 @@ object RequiemServer {
         data.update(player.uuid, updated)
         server.overworld().dataStorage.save()
         deliveries.remove(player.uuid)
-        if (updated.finalPolicy == FinalPolicy.BAN) {
-            enforce(player, FinalPolicy.BAN)
+        val policy = updated.finalPolicy
+        if (policy != null) {
+            enforce(player, policy)?.let { closeDecision(it, pending) }
             return
         }
-        if (player.isDeadOrDying) {
-            player.connection.handleClientCommand(
-                ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN),
-            )
+        val active = respawnIfDead(player) ?: return
+        if (active.isSpectator && !server.isHardcore) {
+            val previousMode = pending.previousGameMode?.let(GameType::byName)
+            active.setGameMode(previousMode ?: server.defaultGameType)
         }
-        val active = server.playerList.getPlayer(player.uuid) ?: return
-        if (updated.finalPolicy != null) {
-            enforce(active, updated.finalPolicy)
-            send(active, DeathView(pending.id, -1, pending.cause, false, false, true))
-        } else {
-            if (active.isSpectator && !server.isHardcore) {
-                val previousMode = pending.previousGameMode?.let(GameType::byName)
-                active.setGameMode(previousMode ?: server.defaultGameType)
-            }
-            if (pending.respawnMode != RespawnMode.VANILLA) {
-                send(active, DeathView(pending.id, -1, pending.cause, false, false, true))
-            }
+        if (pending.respawnMode != RespawnMode.VANILLA) {
+            send(active, DeathView(pending.id, -1, pending.cause, false, false, DeathPresentation.TRANSITION))
         }
     }
 
-    private fun enforce(player: ServerPlayer, policy: FinalPolicy) {
+    private fun closeDecision(player: ServerPlayer, pending: PendingDeath) {
+        send(player, DeathView(pending.id, -1, pending.cause, false, false, DeathPresentation.CLOSE))
+    }
+
+    private fun enforce(player: ServerPlayer, policy: FinalPolicy): ServerPlayer? {
         if (policy == FinalPolicy.BAN && player.server.isDedicatedServer) {
             val reason = "Final death in Requiem"
             player.server.playerList.bans.add(UserBanListEntry(player.gameProfile, null, "Requiem", null, reason))
             player.connection.disconnect(Component.literal(reason))
-            return
+            return null
         }
+        return respawnIfDead(player)?.also { it.setGameMode(GameType.SPECTATOR) }
+    }
+
+    private fun respawnIfDead(player: ServerPlayer): ServerPlayer? {
         if (player.isDeadOrDying) {
             player.connection.handleClientCommand(
                 ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN),
             )
         }
-        val active = player.server.playerList.getPlayer(player.uuid) ?: return
-        active.setGameMode(GameType.SPECTATOR)
+        return player.server.playerList.getPlayer(player.uuid)
     }
 
     fun registerCommands(dispatcher: CommandDispatcher<CommandSourceStack>) {
@@ -165,14 +160,13 @@ object RequiemServer {
                     .then(Commands.argument("lives", IntegerArgumentType.integer(1)).executes { context ->
                         val player = EntityArgument.getPlayer(context, "player")
                         val data = RequiemData.get(player.server)
+                        val pending = data.record(player.uuid).pending
                         data.update(player.uuid, PlayerRecord(IntegerArgumentType.getInteger(context, "lives"), introSeen = true))
                         deliveries.remove(player.uuid)
-                        if (player.isDeadOrDying) {
-                            player.connection.handleClientCommand(
-                                ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN),
-                            )
+                        respawnIfDead(player)?.let { active ->
+                            active.setGameMode(player.server.defaultGameType)
+                            pending?.let { closeDecision(active, it) }
                         }
-                        player.server.playerList.getPlayer(player.uuid)?.setGameMode(player.server.defaultGameType)
                         1
                     }))))
     }

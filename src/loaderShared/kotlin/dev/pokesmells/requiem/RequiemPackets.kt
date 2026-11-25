@@ -5,13 +5,15 @@ import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import java.util.UUID
 
+enum class DeathPresentation { DECISION, TRANSITION, CLOSE }
+
 data class DeathView(
     val transaction: UUID,
     val lives: Int,
     val cause: DeathCause,
     val canFinalize: Boolean,
     val canDefer: Boolean,
-    val intro: Boolean = false,
+    val presentation: DeathPresentation = DeathPresentation.DECISION,
 ) : CustomPacketPayload {
     override fun type() = TYPE
 
@@ -24,11 +26,12 @@ data class DeathView(
                 buf.writeEnum(view.cause)
                 buf.writeBoolean(view.canFinalize)
                 buf.writeBoolean(view.canDefer)
-                buf.writeBoolean(view.intro)
+                // Decision and transition retain the original false and true encodings.
+                buf.writeEnum(view.presentation)
             },
             { buf ->
                 DeathView(buf.readUUID(), buf.readVarInt(), buf.readEnum(DeathCause::class.java),
-                    buf.readBoolean(), buf.readBoolean(), buf.readBoolean())
+                    buf.readBoolean(), buf.readBoolean(), buf.readEnum(DeathPresentation::class.java))
             },
         )
     }

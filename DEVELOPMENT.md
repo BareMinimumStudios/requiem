@@ -36,7 +36,10 @@ moving through the world reveal. `twinkleHoldTicks` controls the pause on the
 star field after selecting Return to Existence. `warpTicks` controls the flight
 and reveal after the destination is ready. Toggle `colorfulStars` for the
 occasional colored flares.
-Plain interface uses Minecraft's standard buttons. Reduced motion holds
+The themed buttons ease in on hover and mark keyboard focus with bright
+corners. Final-death confirmation uses the same controls and starts with
+Go Back focused. Plain interface uses Minecraft's standard buttons.
+Reduced motion uses instant button highlights, holds
 particles still and uses a short fade with no camera motion. A world can
 enable the first-join sequence independently of its death rules.
 

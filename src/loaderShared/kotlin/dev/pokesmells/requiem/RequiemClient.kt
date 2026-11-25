@@ -36,10 +36,6 @@ object RequiemClient {
     }
 
     fun tick() {
-        advancePresentation()
-    }
-
-    private fun advancePresentation() {
         val minecraft = Minecraft.getInstance()
         handoff?.let {
             if (minecraft.connection !== it.connection) {
@@ -61,7 +57,17 @@ object RequiemClient {
         val starClock = handoff?.let { it.screen.starClockAtHandoff(it.ticks.toFloat()) } ?: 0f
         handoff = null
         val config = RequiemSettings.config
-        if (next.payload.intro && !config.playCinematics) {
+        if (next.payload.presentation == DeathPresentation.CLOSE) {
+            val screen = minecraft.screen
+            val transaction = next.payload.transaction
+            if (screen is BetweenScreen && screen.isDecisionFor(transaction) ||
+                screen is FinalDeathScreen && screen.transaction == transaction
+            ) {
+                minecraft.setScreen(null)
+            }
+            return
+        }
+        if (next.payload.presentation == DeathPresentation.TRANSITION && !config.playCinematics) {
             if (minecraft.screen is BetweenScreen) minecraft.setScreen(null)
             return
         }

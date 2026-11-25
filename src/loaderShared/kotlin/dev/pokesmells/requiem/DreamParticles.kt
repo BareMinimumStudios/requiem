@@ -20,7 +20,7 @@ internal class DreamParticles {
     }
 
     fun draw(
-        graphics: GuiGraphics, width: Int, height: Int, skyClock: Float, entranceClock: Float,
+        graphics: GuiGraphics, width: Int, height: Int, skyClock: Float,
         opacity: Float, flightTicks: Float?, reducedMotion: Boolean, count: Int,
         color: Int, accent: Int, colorful: Boolean,
     ) {
@@ -55,7 +55,7 @@ internal class DreamParticles {
             val stillGlow = 0.30f + 0.70f * flare
             val flightGlow = 0.60f + star.phase * 0.40f
             val brightness = if (anchored) {
-                val entrance = if (reducedMotion) 1f else smoothStep((entranceClock - star.phase * 15f) / 13f)
+                val entrance = if (reducedMotion) 1f else smoothStep((skyClock - star.phase * 15f) / 13f)
                 val visibility = 1f + (StarFlight.visibility(depth) - 1f) * stretch
                 opacity * layer.brightness * entrance * visibility * (stillGlow + (flightGlow - stillGlow) * stretch)
             } else {
@@ -85,15 +85,6 @@ internal class DreamParticles {
                 drawTrail(graphics, headX, headY, atan2(y, x), length, layer.size, tint, trailOpacity)
             }
         }
-    }
-
-    private fun mixRgb(from: Int, to: Int, blend: Float): Int {
-        fun channel(shift: Int): Int {
-            val a = (from shr shift) and 255
-            val b = (to shr shift) and 255
-            return (a + (b - a) * blend).toInt()
-        }
-        return (channel(16) shl 16) or (channel(8) shl 8) or channel(0)
     }
 
     private fun drawStar(

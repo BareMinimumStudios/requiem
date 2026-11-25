@@ -3,6 +3,8 @@
   "requiem_cinematics.deferred": "Your decision will be waiting when you return.",
   "requiem_cinematics.confirm_title": "Accept final death?",
   "requiem_cinematics.confirm_body": "The world's final-death policy will take effect.",
+  "requiem_cinematics.confirm_accept": "Accept Final Death",
+  "requiem_cinematics.confirm_cancel": "Go Back",
   "requiem_cinematics.skip": "Skip",
   "requiem_cinematics.unlimited": "Unlimited lives",
   "requiem_cinematics.lives": "Lives remaining: %s"
