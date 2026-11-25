@@ -65,4 +65,13 @@ Published Requiem JARs require neither Incapacitated nor Cardinal Components.
   loaders. Spectators could move. Limbo rejected movement and camera changes,
   corrected the client position, and ended when an operator ran
   `/requiem release`. Ban wrote a vanilla ban entry and denied reconnect.
+- Each dedicated loader ran the same mortality matrix with two clients.
+  Unlimited allowed a return without a finite balance. Limited spent one
+  life per qualifying death and reached final death at zero. Hardcore reached
+  final death on the first qualifying death. Disabled used vanilla respawn
+  without creating a pending decision.
+- A mixed-case username override enabled limited lives while the global mode
+  was disabled. An uppercase UUID override took precedence over the matching
+  username. PvP, zombie, and fall damage each produced the corresponding
+  attribution, with one life spent when enabled and zero when excluded.
 - Other optional mod combinations remain separate test cases.
