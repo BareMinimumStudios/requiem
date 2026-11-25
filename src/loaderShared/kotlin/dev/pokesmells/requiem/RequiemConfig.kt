@@ -45,8 +45,8 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var starCount = 320
     @NonSync var colorfulStars = true
     @NonSync var twinkleHoldTicks = 20
-    @NonSync var warpTicks = 88
-    @NonSync var revealTicks = 22
+    @NonSync var warpTicks = 102
+    @NonSync var revealTicks = 36
     @NonSync var cameraSettle = true
     @NonSync var buttonHoverSound = "requiem_cinematics:button_hover"
     @NonSync var buttonHoverVolume = 0.24

@@ -14,7 +14,7 @@ internal data class CinematicTiming(val duration: Int, val revealDuration: Int) 
         fun forSettings(reducedMotion: Boolean, warpTicks: Int, revealTicks: Int): CinematicTiming {
             if (reducedMotion) return CinematicTiming(12, 12)
             val duration = warpTicks.coerceIn(24, 160)
-            return CinematicTiming(duration, revealTicks.coerceIn(8, minOf(22, duration - 12)))
+            return CinematicTiming(duration, revealTicks.coerceIn(8, minOf(60, duration - 12)))
         }
     }
 }

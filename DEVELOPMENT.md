@@ -34,7 +34,9 @@ The stars twinkle in place before accelerating toward the camera in perspective.
 Stars that pass the camera reappear in the distance, and the flight keeps
 moving through the world reveal. `twinkleHoldTicks` controls the pause on the
 star field after selecting Return to Existence. `warpTicks` controls the flight
-and reveal after the destination is ready. Toggle `colorfulStars` for the
+and reveal after the destination is ready. `revealTicks` controls the fade into
+first person and defaults to 36 ticks (1.8 seconds), within the 102-tick
+sequence. Toggle `colorfulStars` for the
 occasional colored flares.
 The themed buttons ease in on hover and mark keyboard focus with bright
 corners. Final-death confirmation uses the same controls and starts with
