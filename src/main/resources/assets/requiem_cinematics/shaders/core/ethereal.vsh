@@ -1,0 +1,12 @@
+#version 150
+
+in vec3 Position;
+uniform mat4 ModelViewMat;
+uniform mat4 ProjMat;
+uniform vec2 Canvas;
+out vec2 uv;
+
+void main() {
+    uv = Position.xy / Canvas;
+    gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
+}

@@ -35,6 +35,9 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var showLastMoments = true
     @NonSync var title = "The Between"
     @NonSync var playDecisionDialogue = true
+    @NonSync var varyDecisionDialogue = true
+    @NonSync var etherealSky = true
+    @NonSync var cursorStarDrift = true
     @NonSync var disorientedText = "Where… am I?"
     @NonSync var subtitle = "What will you do?"
     @NonSync var returnText = "Will you return to existence?"

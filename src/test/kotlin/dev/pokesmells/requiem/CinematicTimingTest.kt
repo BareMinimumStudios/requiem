@@ -26,12 +26,11 @@ class CinematicTimingTest {
     }
 
     @Test
-    fun starsStopAndWorldAudioLeadsTheReveal() {
+    fun worldAudioLeadsTheRevealAndTheCameraReachesItsRestingPosition() {
         val timing = CinematicTiming.forSettings(false, 580, 52)
-        val still = timing.stillStart.toFloat()
         val reveal = timing.revealStart.toFloat()
-        assertEquals(0f, timing.starMotion(still))
-        assertEquals(timing.starClock(still), timing.starClock(reveal + 12f))
+        assertTrue(timing.worldBlend(reveal - 8f) > 0f)
+        assertEquals(0f, timing.reveal(reveal - 8f))
         assertEquals(0f, timing.reveal(reveal))
         assertEquals(0.32f, timing.worldBlend(reveal))
         assertEquals(1f, timing.worldBlend(580f))

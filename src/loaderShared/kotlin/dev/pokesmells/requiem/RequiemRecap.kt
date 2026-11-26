@@ -93,10 +93,10 @@ internal object RequiemRecap {
         }
     }
 
-    fun render(graphics: GuiGraphics, id: UUID, clock: Float, stillStart: Int) {
+    fun render(graphics: GuiGraphics, id: UUID, clock: Float, revealStart: Int) {
         if (transaction != id || frames.isEmpty() || !enabled()) return
         val client = Minecraft.getInstance()
-        val duration = minOf(550f, stillStart.toFloat())
+        val duration = minOf(550f, revealStart * 1.025f)
         if (clock >= duration || duration < 14f) {
             clear(client)
             return

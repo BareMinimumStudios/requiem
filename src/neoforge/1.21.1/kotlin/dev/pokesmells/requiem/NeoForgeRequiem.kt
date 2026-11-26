@@ -16,7 +16,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
 @Mod(MOD_ID)
 class NeoForgeRequiem(bus: IEventBus) {
     init {
-        if (FMLEnvironment.dist == Dist.CLIENT) NeoForgeClientPayload.register()
+        if (FMLEnvironment.dist == Dist.CLIENT) NeoForgeClientPayload.register(bus)
         bus.addListener { event: FMLCommonSetupEvent -> event.enqueueWork { RequiemSettings.config; Unit } }
         bus.addListener(::registerPayloads)
         RequiemServer.send = PacketDistributor::sendToPlayer

@@ -32,13 +32,22 @@ class BetweenScreen(
     private val reducedMotion = !config.playCinematics || config.reducedMotion || config.plainInterface
     private val timing = CinematicTiming.forSettings(reducedMotion, config.warpTicks, config.revealTicks)
     private val dialogue = if (!isTransition && !reducedMotion && config.playDecisionDialogue) {
-        listOf("…", "…", config.disorientedText)
+        val opening = Component.literal(config.disorientedText)
+        if (config.varyDecisionDialogue) {
+            val thoughts = listOf("thought_place", "thought_alive", "thought_here")
+            listOf(Component.literal("…"), opening, label(thoughts[Math.floorMod(view.transaction.hashCode(), thoughts.size)]))
+        } else {
+            listOf(Component.literal("…"), Component.literal("…"), opening)
+        }
     } else {
         emptyList()
     }
     private var dialogueStep = 0
     private var dialogueChangedAt = 0
     private var dialogueKeyHeld = false
+    private var pointerX = 0.5f
+    private var pointerY = 0.5f
+    private var pointerClock = 0f
     private val dialoguePending get() = dialogueStep < dialogue.size
     private val twinkleHoldTicks = config.twinkleHoldTicks.coerceIn(0, 80)
 
@@ -47,6 +56,10 @@ class BetweenScreen(
     internal fun cameraTilt(partialTick: Float): Float =
         if (!isTransition || reducedMotion || !config.cameraSettle) 0f
         else -4f * (1f - timing.cameraSettle(sceneClock(partialTick)))
+
+    internal fun cameraLift(partialTick: Float): Float =
+        if (!isTransition || reducedMotion || !config.cameraSettle) 0f
+        else 0.20f * (1f - timing.cameraSettle(sceneClock(partialTick)))
 
     internal fun warpAudioFrame(): WarpAudioFrame? {
         if (finalStarted != null) return WarpAudioFrame(0f, 0f, 0f)
@@ -87,6 +100,7 @@ class BetweenScreen(
         val opacity = 1f - reveal
         graphics.fillGradient(0, 0, width, height, tinted(0x03040c, opacity), tinted(config.skyColor, opacity))
         if (!config.plainInterface) {
+            if (config.etherealSky) EtherealSky.render(graphics, if (reducedMotion) 0f else clock, opacity, config.accentColor)
             drawParticles(graphics, width, height, clock, 1f - smoothStep(reveal), null)
         }
     }
@@ -94,11 +108,12 @@ class BetweenScreen(
     @Suppress("DEPRECATION")
     private fun drawParticles(
         graphics: GuiGraphics, width: Int, height: Int, skyClock: Float,
-        opacity: Float, flightTicks: Float?, motion: Float = 1f,
+        opacity: Float, flightTicks: Float?, cursor: Boolean = false,
     ) {
         graphics.drawManaged {
             particles.draw(graphics, width, height, skyClock, opacity, flightTicks, reducedMotion,
-                config.starCount, config.starColor, config.accentColor, config.colorfulStars, motion)
+                config.starCount, config.starColor, config.accentColor, config.colorfulStars,
+                if (cursor) pointerX * width else null, pointerY * height)
         }
     }
 
@@ -216,7 +231,14 @@ class BetweenScreen(
         val emergence = if (isTransition || reducedMotion) 1f else smoothStep(clock / 14f)
         val windup = returnStarted?.let { smoothStep((clock - it) / (twinkleHoldTicks - 1).coerceAtLeast(1)) } ?: 0f
         val darkness = if (isTransition) 1f - reveal else emergence
-        val flightTicks = if (isTransition && !reducedMotion) timing.starClock(clock) else null
+        val flightTicks = if (isTransition && !reducedMotion) clock else null
+        val cursor = !isTransition && !reducedMotion && config.cursorStarDrift
+        if (cursor) {
+            val amount = (1f - kotlin.math.exp(-(clock - pointerClock).coerceIn(0f, 4f) * 0.28f))
+            pointerX += ((mouseX.toFloat() / width.coerceAtLeast(1)).coerceIn(0f, 1f) - pointerX) * amount
+            pointerY += ((mouseY.toFloat() / height.coerceAtLeast(1)).coerceIn(0f, 1f) - pointerY) * amount
+        }
+        pointerClock = clock
         val controls = when {
             isTransition -> 1f - reveal
             dialoguePending -> 0f
@@ -228,15 +250,18 @@ class BetweenScreen(
         graphics.fillGradient(0, 0, width, height, tinted(skyTop, darkness), tinted(config.skyColor, darkness))
         if (!config.plainInterface) {
             val starlight = if (isTransition) 1f - smoothStep((reveal - 0.16f) / 0.84f) else darkness
-            drawParticles(graphics, width, height, starClockOffset + (flightTicks ?: clock), starlight,
-                flightTicks, if (flightTicks != null) timing.starMotion(clock) else 1f)
+            if (config.etherealSky) {
+                EtherealSky.render(graphics, if (reducedMotion) 0f else starClockOffset + clock,
+                    darkness, config.accentColor, pointerX, pointerY)
+            }
+            drawParticles(graphics, width, height, starClockOffset + clock, starlight, flightTicks, cursor)
         }
         actionButtons.forEach {
             it.visible = controls > 0.05f
             it.active = it.visible && !choiceSent && returnStarted == null
             it.setAlpha(controls)
         }
-        if (isTransition) RequiemRecap.render(graphics, view.transaction, clock, timing.stillStart)
+        if (isTransition) RequiemRecap.render(graphics, view.transaction, clock, timing.revealStart)
         if (dialoguePending) drawDialogue(graphics, clock)
         if (!isTransition && controls > 0.05f) {
             val textColor = tinted(config.textColor, controls)
@@ -288,7 +313,7 @@ class BetweenScreen(
     private fun drawDialogue(graphics: GuiGraphics, clock: Float) {
         val alpha = smoothStep((clock - dialogueChangedAt) / 7f)
         if (alpha < 0.025f) return
-        val lines = font.split(Component.literal(dialogue[dialogueStep]), (width - 24).coerceAtLeast(1))
+        val lines = font.split(dialogue[dialogueStep], (width - 24).coerceAtLeast(1))
         val top = (height - lines.size * font.lineHeight) / 2
         lines.forEachIndexed { index, line ->
             graphics.drawCenteredString(font, line, width / 2, top + index * font.lineHeight, tinted(config.textColor, alpha))

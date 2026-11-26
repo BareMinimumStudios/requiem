@@ -44,23 +44,28 @@ private class DreamButton(
             highlight + (target - highlight).coerceIn(-elapsed / 155f, elapsed / 110f)
         val eased = smoothStep(highlight)
         val keyboardFocus = active && isFocused
-        val border = tinted(accent, alpha * (0.46f + 0.49f * eased))
-        val top = tinted(mixRgb(0x19203b, 0x354772, eased), alpha * 0.92f)
-        val bottom = tinted(mixRgb(0x12172e, 0x202d4b, eased), alpha * 0.94f)
-        graphics.fill(x, y, x + width, y + height, border)
-        graphics.fillGradient(x + 1, y + 1, x + width - 1, y + height - 1, top, bottom)
+        val center = x + width / 2
+        val midY = y + height / 2
+        val halfSpan = (width * (0.36f + 0.13f * eased)).roundToInt()
+        val haze = mixRgb(0x6076AA, accent, eased)
+        for (row in -8..8) {
+            val shape = 1f - (row * row) / 81f
+            val span = (halfSpan * kotlin.math.sqrt(shape)).roundToInt()
+            graphics.fill(center - span, midY + row, center + span, midY + row + 1,
+                tinted(haze, alpha * shape * (0.08f + 0.18f * eased)))
+        }
         if (eased > 0.03f) {
-            val center = x + width / 2
-            val span = ((width - 12) * eased * 0.5f).roundToInt()
+            val span = ((width - 12) * eased * 0.20f).roundToInt()
             graphics.fill(center - span, y + height - 2, center + span, y + height - 1,
                 tinted(accent, alpha * eased * 0.72f))
         }
         if (keyboardFocus) {
             val mark = tinted(0xE0ECFF, alpha * 0.95f)
-            graphics.fill(x, y, x + 4, y + 1, mark)
-            graphics.fill(x, y, x + 1, y + 4, mark)
-            graphics.fill(x + width - 4, y + height - 1, x + width, y + height, mark)
-            graphics.fill(x + width - 1, y + height - 4, x + width, y + height, mark)
+            for (side in 0..1) {
+                val edge = if (side == 0) x + 6 else x + width - 6
+                graphics.fill(edge - 1, midY - 2, edge + 2, midY + 3, mark)
+                graphics.fill(edge - 2, midY - 1, edge + 3, midY + 2, mark)
+            }
         }
         val foreground = if (active) 0xEFF3FF else 0xA3ACC8
         renderScrollingString(graphics, Minecraft.getInstance().font, 6, tinted(foreground, alpha))

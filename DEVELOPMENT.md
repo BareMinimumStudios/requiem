@@ -29,38 +29,36 @@ The client settings control the title, subtitle, choice labels, palette,
 particle count, warp duration, reveal duration, camera settling and sounds.
 The life count is hidden by default and can be enabled with
 `showLivesRemaining`.
-The three star layers are generated on the client without frame capture.
-The stars twinkle in place before accelerating toward the camera in perspective.
-Stars that pass the camera reappear in the distance, and the flight keeps
-slowing to a still point before the world reveal. World ambience begins
-returning under the still stars, and the camera eases into first person. `twinkleHoldTicks` controls the pause on the
-star field after selecting Return to Existence. `warpTicks` controls the flight
-and reveal after the destination is ready. `revealTicks` controls the fade into
-first person and defaults to 52 ticks (2.6 seconds), within the 580-tick
-sequence. For the shorter timing and lower star count from the prior local
-settings, use warpTicks = 48, evealTicks = 18 and starCount = 240.
-Toggle `colorfulStars` for the
+The stars twinkle in place, stream toward the camera in perspective,
+and keep moving through the world reveal. World ambience starts returning
+under the stars, and the camera descends gently into first person.
+`etherealSky` toggles the shimmering nebula. `cursorStarDrift` controls gentle
+star displacement around the pointer. Reduced motion turns off the drift.
+
+`twinkleHoldTicks` controls the pause after selecting Return to Existence.
+`warpTicks` controls the flight and reveal once the destination is ready.
+`revealTicks` defaults to 52 ticks (2.6 seconds) within the 580-tick flight.
+For a shorter and less dense sequence, set `warpTicks = 48`,
+`revealTicks = 18`, and `starCount = 240`. Toggle `colorfulStars` for
 occasional colored flares.
-The themed buttons ease in on hover and mark keyboard focus with bright
-corners. Final-death confirmation uses the same controls and starts with
-Go Back focused. After final death is confirmed, the stars fade into
-Spectator view over 42 ticks by default. Adjust this with `spectatorRevealTicks`.
-Plain interface uses Minecraft's standard buttons.
-Reduced motion uses instant button highlights, holds
-particles still and uses a short fade with no camera motion. A world can
-enable the first-join sequence independently of its death rules.
 
-When `showLastMoments` is enabled, the return cinematic shows up to twelve
-recent first-person world frames before the reveal. Their feathered edges
-blend into the star field. The images play newest-first, crossfade faster and recede as the
-flight progresses. Each is at most 128 pixels on its longest edge. Frames stay in client memory. Gameplay
-interface elements such as the HUD are excluded.
+The floating choices brighten on hover and mark keyboard focus at the sides.
+Final-death confirmation uses the same controls and starts with Go Back
+focused. Its fade into Spectator can be adjusted with `spectatorRevealTicks`.
+Plain interface uses Minecraft's standard buttons. Reduced motion uses
+immediate highlights, a static sky, and a short fade with no camera movement.
+A world can enable the first-join sequence independently of its death rules.
 
-The decision screen opens with two quiet beats and a short line of
-dialogue. Click or press Enter or Space to advance each beat. Customize the line with `disorientedText`, and the prompt and
-choices with the existing text settings. Disable the delay with
-`playDecisionDialogue`. Reduced motion and plain interface show the
-choices immediately.
+`showLastMoments` displays up to twelve recent first-person world frames,
+newest first. They recede and crossfade faster toward the end.
+Each frame is at most 128 pixels along its longest edge and stays in client
+memory. The HUD is excluded.
+
+The decision dialogue waits for a click, Enter, or Space between each line.
+Customize the opening question with `disorientedText` and the choices with
+the existing text settings. `varyDecisionDialogue` enables a short alternate
+thought. Turn off `playDecisionDialogue` to show the choices immediately.
+Plain interface and reduced motion also go directly to the choices.
 
 ## Client audio
 

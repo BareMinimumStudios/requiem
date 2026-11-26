@@ -23,12 +23,12 @@ internal class DreamParticles {
     fun draw(
         graphics: GuiGraphics, width: Int, height: Int, skyClock: Float,
         opacity: Float, flightTicks: Float?, reducedMotion: Boolean, count: Int,
-        color: Int, accent: Int, colorful: Boolean, motion: Float = 1f,
+        color: Int, accent: Int, colorful: Boolean, pointerX: Float? = null, pointerY: Float = 0f,
     ) {
         val anchorCount = count.coerceIn(0, 600)
         if (opacity <= 0f || anchorCount == 0) return
         val travel = flightTicks?.let(StarFlight::distance) ?: 0f
-        val speed = (flightTicks?.let(StarFlight::speed) ?: 0f) * motion
+        val speed = flightTicks?.let(StarFlight::speed) ?: 0f
         val stretch = flightTicks?.let(StarFlight::stretch) ?: 0f
         val limit = if (stretch > 0f) anchorCount * 3 else anchorCount
         val halfWidth = width * 0.5f
@@ -75,18 +75,25 @@ internal class DreamParticles {
                 }
             } else flightTint
             val tint = if (anchored) mixRgb(restTint, flightTint, stretch) else flightTint
-            val headX = halfWidth + x
-            val headY = halfHeight + y
+            var headX = halfWidth + x
+            var headY = halfHeight + y
+            if (pointerX != null) {
+                val dx = headX - pointerX
+                val dy = headY - pointerY
+                val radius = minOf(width, height) * 0.20f
+                val distance = hypot(dx, dy)
+                if (distance in 0.01f..<radius) {
+                    val push = 8f * smoothStep(1f - distance / radius) * distance / (distance + 12f)
+                    headX += dx * push / distance
+                    headY += dy * push / distance
+                }
+            }
             if (anchored && stretch < 1f) {
                 val rays = if (index % 8 == 0 && !reducedMotion) smoothStep((flare - 0.38f) / 0.62f) else 0f
                 drawStar(graphics, headX.toInt(), headY.toInt(), layer.size, tint,
                     brightness * (1f - stretch), rays)
             }
-            if (stretch > 0f && motion < 1f) {
-                val still = brightness * stretch * (1f - motion) * if (anchored) 0.76f else 0.40f
-                drawStar(graphics, headX.toInt(), headY.toInt(), 1, tint, still, 0f)
-            }
-            if (stretch > 0f && motion > 0f) {
+            if (stretch > 0f) {
                 val radius = hypot(x, y).coerceAtLeast(0.001f)
                 val trailOpacity = if (anchored) brightness * stretch else brightness
                 val tailX = halfWidth + x * tailRatio

@@ -7,6 +7,9 @@
   "requiem_cinematics.confirm_cancel": "Go Back",
   "requiem_cinematics.skip": "Skip",
   "requiem_cinematics.dialogue_continue": "Click to continue",
+  "requiem_cinematics.thought_place": "What is this place?",
+  "requiem_cinematics.thought_alive": "Am I still here?",
+  "requiem_cinematics.thought_here": "How long have I been here?",
   "requiem_cinematics.unlimited": "Unlimited lives",
   "requiem_cinematics.lives": "Lives remaining: %s"
 }
