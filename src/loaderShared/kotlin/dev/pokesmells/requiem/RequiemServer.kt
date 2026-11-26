@@ -18,6 +18,7 @@ import java.util.UUID
 object RequiemServer {
     private data class Delivery(val id: UUID, val due: Int)
     private val deliveries = mutableMapOf<UUID, Delivery>()
+    private val limboJoins = mutableSetOf<UUID>()
     lateinit var send: (ServerPlayer, DeathView) -> Unit
 
     fun onDeath(player: ServerPlayer, source: DamageSource) {
@@ -59,9 +60,8 @@ object RequiemServer {
         val data = RequiemData.get(player.server)
         val record = data.record(player.uuid)
         if (record.finalPolicy != null) {
-            enforce(player, record.finalPolicy)?.let {
-                if (record.finalPolicy == FinalPolicy.LIMBO) sendLimbo(it, it.uuid, DeathPresentation.LIMBO)
-            }
+            enforce(player, record.finalPolicy)
+            if (record.finalPolicy == FinalPolicy.LIMBO) limboJoins.add(player.uuid)
         } else if (record.pending == null && !record.introSeen) {
             data.update(player.uuid, record.copy(introSeen = true))
             if (RequiemSettings.config.firstJoinCinematic) {
@@ -72,14 +72,20 @@ object RequiemServer {
 
     fun onDisconnect(player: ServerPlayer) {
         deliveries.remove(player.uuid)
+        limboJoins.remove(player.uuid)
     }
 
     fun tick(player: ServerPlayer) {
         val data = RequiemData.get(player.server)
         val record = data.record(player.uuid)
-        if (record.finalPolicy != null && !player.isSpectator) {
-            enforce(player, record.finalPolicy)?.let {
-                if (record.finalPolicy == FinalPolicy.LIMBO) sendLimbo(it, it.uuid, DeathPresentation.LIMBO)
+        val policy = record.finalPolicy
+        if (policy != null) {
+            val active = if (player.isSpectator) player else enforce(player, policy)
+            // The client play listener must be ready before receiving its restored screen.
+            if (policy == FinalPolicy.LIMBO && active != null && active.tickCount >= 2 &&
+                limboJoins.remove(player.uuid)
+            ) {
+                sendLimbo(active, active.uuid, DeathPresentation.LIMBO)
             }
             return
         }
@@ -175,6 +181,7 @@ object RequiemServer {
                         val pending = record.pending
                         data.update(player.uuid, PlayerRecord(IntegerArgumentType.getInteger(context, "lives"), introSeen = true))
                         deliveries.remove(player.uuid)
+                        limboJoins.remove(player.uuid)
                         respawnIfDead(player)?.let { active ->
                             active.setGameMode(player.server.defaultGameType)
                             pending?.let { closeDecision(active, it) }
