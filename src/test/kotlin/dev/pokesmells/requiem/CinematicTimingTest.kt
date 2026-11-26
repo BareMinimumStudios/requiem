@@ -24,4 +24,18 @@ class CinematicTimingTest {
         assertTrue(timing.reveal(31f) < 1f / 18f)
         assertTrue(timing.reveal(47f) > 17f / 18f)
     }
+
+    @Test
+    fun starsStopAndWorldAudioLeadsTheReveal() {
+        val timing = CinematicTiming.forSettings(false, 580, 52)
+        val still = timing.stillStart.toFloat()
+        val reveal = timing.revealStart.toFloat()
+        assertEquals(0f, timing.starMotion(still))
+        assertEquals(timing.starClock(still), timing.starClock(reveal + 12f))
+        assertEquals(0f, timing.reveal(reveal))
+        assertEquals(0.32f, timing.worldBlend(reveal))
+        assertEquals(1f, timing.worldBlend(580f))
+        assertEquals(1f, timing.cameraSettle(580f))
+        assertEquals(0f, CinematicTiming.forSettings(true, 580, 52).worldBlend(0f))
+    }
 }

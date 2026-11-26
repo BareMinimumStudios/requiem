@@ -13,7 +13,10 @@ internal object WarpEnvelope {
         return WarpAudioFrame(0.22f * build, 0.14f * build, 1f - build)
     }
 
-    fun flight(progress: Float, reveal: Float, stretch: Float, tailTicks: Int = 0): WarpAudioFrame {
+    fun flight(
+        progress: Float, reveal: Float, stretch: Float, tailTicks: Int = 0,
+        worldBlend: Float = smoothStep(reveal),
+    ): WarpAudioFrame {
         val build = 0.72f * stretch + 0.28f * smoothStep(progress)
         val world = reveal.coerceIn(0f, 1f)
         val remaining = 1f - world
@@ -21,7 +24,7 @@ internal object WarpEnvelope {
         return WarpAudioFrame(
             (0.22f + 0.78f * build) * (remaining * (0.55f + 0.45f * remaining) + tail),
             (0.14f + 0.86f * build) * (1f - 0.27f * world),
-            smoothStep(world),
+            worldBlend,
             if (world >= 1f) tailTicks else 0,
         )
     }

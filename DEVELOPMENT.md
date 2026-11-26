@@ -32,7 +32,8 @@ The life count is hidden by default and can be enabled with
 The three star layers are generated on the client without frame capture.
 The stars twinkle in place before accelerating toward the camera in perspective.
 Stars that pass the camera reappear in the distance, and the flight keeps
-moving through the world reveal. `twinkleHoldTicks` controls the pause on the
+slowing to a still point before the world reveal. World ambience begins
+returning under the still stars, and the camera eases into first person. `twinkleHoldTicks` controls the pause on the
 star field after selecting Return to Existence. `warpTicks` controls the flight
 and reveal after the destination is ready. `revealTicks` controls the fade into
 first person and defaults to 52 ticks (2.6 seconds), within the 580-tick

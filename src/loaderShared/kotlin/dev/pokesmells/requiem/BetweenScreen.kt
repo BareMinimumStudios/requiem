@@ -46,7 +46,7 @@ class BetweenScreen(
 
     internal fun cameraTilt(partialTick: Float): Float =
         if (!isTransition || reducedMotion || !config.cameraSettle) 0f
-        else -4f * (1f - timing.reveal(sceneClock(partialTick)))
+        else -4f * (1f - timing.cameraSettle(sceneClock(partialTick)))
 
     internal fun warpAudioFrame(): WarpAudioFrame? {
         if (finalStarted != null) return WarpAudioFrame(0f, 0f, 0f)
@@ -55,7 +55,7 @@ class BetweenScreen(
             val flight = if (reducedMotion) 0.25f else clock / timing.revealStart.coerceAtLeast(1)
             val stretch = if (reducedMotion) 0f else StarFlight.stretch(clock)
             val tail = if (reducedMotion) 0 else config.warpTailTicks.coerceIn(0, 80)
-            return WarpEnvelope.flight(flight, timing.reveal(clock), stretch, tail)
+            return WarpEnvelope.flight(flight, timing.reveal(clock), stretch, tail, timing.worldBlend(clock))
         }
         return returnStarted?.let { primingAudio((age - it).toFloat()) }
     }
@@ -94,11 +94,11 @@ class BetweenScreen(
     @Suppress("DEPRECATION")
     private fun drawParticles(
         graphics: GuiGraphics, width: Int, height: Int, skyClock: Float,
-        opacity: Float, flightTicks: Float?,
+        opacity: Float, flightTicks: Float?, motion: Float = 1f,
     ) {
         graphics.drawManaged {
             particles.draw(graphics, width, height, skyClock, opacity, flightTicks, reducedMotion,
-                config.starCount, config.starColor, config.accentColor, config.colorfulStars)
+                config.starCount, config.starColor, config.accentColor, config.colorfulStars, motion)
         }
     }
 
@@ -216,7 +216,7 @@ class BetweenScreen(
         val emergence = if (isTransition || reducedMotion) 1f else smoothStep(clock / 14f)
         val windup = returnStarted?.let { smoothStep((clock - it) / (twinkleHoldTicks - 1).coerceAtLeast(1)) } ?: 0f
         val darkness = if (isTransition) 1f - reveal else emergence
-        val flightTicks = if (isTransition && !reducedMotion) clock else null
+        val flightTicks = if (isTransition && !reducedMotion) timing.starClock(clock) else null
         val controls = when {
             isTransition -> 1f - reveal
             dialoguePending -> 0f
@@ -228,14 +228,15 @@ class BetweenScreen(
         graphics.fillGradient(0, 0, width, height, tinted(skyTop, darkness), tinted(config.skyColor, darkness))
         if (!config.plainInterface) {
             val starlight = if (isTransition) 1f - smoothStep((reveal - 0.16f) / 0.84f) else darkness
-            drawParticles(graphics, width, height, starClockOffset + clock, starlight, flightTicks)
+            drawParticles(graphics, width, height, starClockOffset + (flightTicks ?: clock), starlight,
+                flightTicks, if (flightTicks != null) timing.starMotion(clock) else 1f)
         }
         actionButtons.forEach {
             it.visible = controls > 0.05f
             it.active = it.visible && !choiceSent && returnStarted == null
             it.setAlpha(controls)
         }
-        if (isTransition) RequiemRecap.render(graphics, view.transaction, clock, timing.revealStart)
+        if (isTransition) RequiemRecap.render(graphics, view.transaction, clock, timing.stillStart)
         if (dialoguePending) drawDialogue(graphics, clock)
         if (!isTransition && controls > 0.05f) {
             val textColor = tinted(config.textColor, controls)
