@@ -44,7 +44,11 @@ occasional colored flares.
 
 The floating choices brighten on hover and mark keyboard focus at the sides.
 Final-death confirmation uses the same controls and starts with Go Back
-focused. Its fade into Spectator can be adjusted with `spectatorRevealTicks`.
+focused. Its fade into Spectator uses a short reflection and a low chime.
+Adjust these with `finalDeathThought` and `finalDeathSound`, and adjust the
+fade with `spectatorRevealTicks`. Limbo has a slow teal sky, softened world
+sounds, and a quiet arrival cue. Customize `limboText` and `limboSound`.
+The menu stays available, and operator release restores gameplay.
 Plain interface uses Minecraft's standard buttons. Reduced motion uses
 immediate highlights, a static sky, and a short fade with no camera movement.
 A world can enable the first-join sequence independently of its death rules.

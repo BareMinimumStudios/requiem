@@ -89,7 +89,8 @@ internal object RequiemRecap {
             DeathPresentation.TRANSITION -> {
                 if (transaction == view.transaction) returning = true else clear(client)
             }
-            DeathPresentation.CLOSE -> if (transaction == view.transaction) clear(client)
+            DeathPresentation.CLOSE, DeathPresentation.LIMBO -> if (transaction == view.transaction) clear(client)
+            DeathPresentation.LIMBO_EXIT -> Unit
         }
     }
 

@@ -37,12 +37,12 @@ internal object RequiemAudio {
         play(config.buttonClickSound, config.buttonClickVolume)
     }
 
-    fun play(sound: String, volume: Double = 0.25) {
+    fun play(sound: String, volume: Double = 0.25, pitch: Float = 1f) {
         val config = RequiemSettings.config
         if (config.muteCinematics || volume <= 0.0) return
         val manager = Minecraft.getInstance().soundManager
         val event = soundEvent(manager, sound) ?: return
-        manager.play(SimpleSoundInstance.forUI(event, 1f, volume.coerceIn(0.0, 1.0).toFloat()))
+        manager.play(SimpleSoundInstance.forUI(event, pitch, volume.coerceIn(0.0, 1.0).toFloat()))
     }
 
     fun updateWarp(frame: WarpAudioFrame?, flightStarted: Boolean) {

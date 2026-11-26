@@ -5,7 +5,7 @@ import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import java.util.UUID
 
-enum class DeathPresentation { DECISION, TRANSITION, CLOSE }
+enum class DeathPresentation { DECISION, TRANSITION, CLOSE, LIMBO, LIMBO_EXIT }
 
 data class DeathView(
     val transaction: UUID,

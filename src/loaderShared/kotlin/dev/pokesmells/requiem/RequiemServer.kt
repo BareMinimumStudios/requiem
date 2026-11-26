@@ -59,7 +59,9 @@ object RequiemServer {
         val data = RequiemData.get(player.server)
         val record = data.record(player.uuid)
         if (record.finalPolicy != null) {
-            enforce(player, record.finalPolicy)
+            enforce(player, record.finalPolicy)?.let {
+                if (record.finalPolicy == FinalPolicy.LIMBO) sendLimbo(it, it.uuid, DeathPresentation.LIMBO)
+            }
         } else if (record.pending == null && !record.introSeen) {
             data.update(player.uuid, record.copy(introSeen = true))
             if (RequiemSettings.config.firstJoinCinematic) {
@@ -76,7 +78,9 @@ object RequiemServer {
         val data = RequiemData.get(player.server)
         val record = data.record(player.uuid)
         if (record.finalPolicy != null && !player.isSpectator) {
-            enforce(player, record.finalPolicy)
+            enforce(player, record.finalPolicy)?.let {
+                if (record.finalPolicy == FinalPolicy.LIMBO) sendLimbo(it, it.uuid, DeathPresentation.LIMBO)
+            }
             return
         }
         val pending = record.pending ?: return
@@ -117,7 +121,10 @@ object RequiemServer {
         deliveries.remove(player.uuid)
         val policy = updated.finalPolicy
         if (policy != null) {
-            enforce(player, policy)?.let { closeDecision(it, pending) }
+            enforce(player, policy)?.let {
+                if (policy == FinalPolicy.LIMBO) sendLimbo(it, pending.id, DeathPresentation.LIMBO)
+                else closeDecision(it, pending)
+            }
             return
         }
         val active = respawnIfDead(player) ?: return
@@ -128,6 +135,10 @@ object RequiemServer {
         if (pending.respawnMode != RespawnMode.VANILLA) {
             send(active, DeathView(pending.id, -1, pending.cause, false, false, DeathPresentation.TRANSITION))
         }
+    }
+
+    private fun sendLimbo(player: ServerPlayer, transaction: UUID, presentation: DeathPresentation) {
+        send(player, DeathView(transaction, -1, DeathCause.ENVIRONMENT, false, false, presentation))
     }
 
     private fun closeDecision(player: ServerPlayer, pending: PendingDeath) {
@@ -160,12 +171,16 @@ object RequiemServer {
                     .then(Commands.argument("lives", IntegerArgumentType.integer(1)).executes { context ->
                         val player = EntityArgument.getPlayer(context, "player")
                         val data = RequiemData.get(player.server)
-                        val pending = data.record(player.uuid).pending
+                        val record = data.record(player.uuid)
+                        val pending = record.pending
                         data.update(player.uuid, PlayerRecord(IntegerArgumentType.getInteger(context, "lives"), introSeen = true))
                         deliveries.remove(player.uuid)
                         respawnIfDead(player)?.let { active ->
                             active.setGameMode(player.server.defaultGameType)
                             pending?.let { closeDecision(active, it) }
+                            if (record.finalPolicy == FinalPolicy.LIMBO) {
+                                sendLimbo(active, active.uuid, DeathPresentation.LIMBO_EXIT)
+                            }
                         }
                         1
                     }))))

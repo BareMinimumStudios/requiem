@@ -54,6 +54,10 @@ class RequiemConfig : Config(id("settings")) {
     @NonSync var warpTicks = 580
     @NonSync var revealTicks = 52
     @NonSync var spectatorRevealTicks = 42
+    @NonSync var finalDeathThought = "The stars remain."
+    @NonSync var limboText = "You are here, between breaths."
+    @NonSync var limboSound = "minecraft:block.amethyst_block.chime"
+    @NonSync var finalDeathSound = "minecraft:block.amethyst_block.resonate"
     @NonSync var cameraSettle = true
     @NonSync var buttonHoverSound = "requiem_cinematics:button_hover"
     @NonSync var buttonHoverVolume = 0.24

@@ -22,6 +22,7 @@ object RequiemClient {
 
     private var pending: Presentation? = null
     private var handoff: Handoff? = null
+    private var limboConnection: ClientPacketListener? = null
 
     fun beginReturn(screen: BetweenScreen) = beginHandoff(screen, finalDeath = false)
 
@@ -47,10 +48,17 @@ object RequiemClient {
     fun tick() {
         val minecraft = Minecraft.getInstance()
         RequiemRecap.tick(minecraft)
+        if (limboConnection !== minecraft.connection) limboConnection = null
         advancePresentation(minecraft)
+        if (limboConnection != null && minecraft.level != null && minecraft.player?.isSpectator == true &&
+            minecraft.screen == null
+        ) {
+            minecraft.setScreen(LimboScreen())
+        }
         val between = minecraft.screen as? BetweenScreen
         val frame = between?.warpAudioFrame()
             ?: (minecraft.screen as? SpectatorFadeScreen)?.audioFrame()
+            ?: limboConnection?.let { WarpAudioFrame(0f, 0f, 0.13f) }
             ?: handoff?.let {
                 if (it.finalDeath) it.screen.warpAudioFrame() else it.screen.primingAudio(it.ticks.toFloat())
             }
@@ -80,6 +88,19 @@ object RequiemClient {
         val starClock = current?.let { it.screen.starClockAtHandoff(it.ticks.toFloat()) } ?: 0f
         handoff = null
         val config = RequiemSettings.config
+        if (next.payload.presentation == DeathPresentation.LIMBO) {
+            if (limboConnection !== next.connection && config.playCinematics) {
+                RequiemAudio.play(config.limboSound, 0.18, 0.62f)
+            }
+            limboConnection = next.connection
+            minecraft.setScreen(LimboScreen())
+            return
+        }
+        if (next.payload.presentation == DeathPresentation.LIMBO_EXIT) {
+            limboConnection = null
+            if (minecraft.screen is LimboScreen) minecraft.setScreen(null)
+            return
+        }
         if (next.payload.presentation == DeathPresentation.CLOSE) {
             val screen = minecraft.screen
             val transaction = next.payload.transaction
