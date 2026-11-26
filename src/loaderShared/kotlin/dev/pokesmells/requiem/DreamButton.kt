@@ -46,15 +46,19 @@ private class DreamButton(
         val keyboardFocus = active && isFocused
         val center = x + width / 2
         val midY = y + height / 2
-        val halfSpan = (width * (0.36f + 0.13f * eased)).roundToInt()
+        val halfSpan = (width * 0.36f).roundToInt()
         val haze = mixRgb(0x6076AA, accent, eased)
         for (row in -8..8) {
             val shape = 1f - (row * row) / 81f
             val span = (halfSpan * kotlin.math.sqrt(shape)).roundToInt()
             graphics.fill(center - span, midY + row, center + span, midY + row + 1,
-                tinted(haze, alpha * shape * (0.08f + 0.18f * eased)))
+                tinted(haze, alpha * shape * (0.08f - 0.04f * eased)))
         }
         if (eased > 0.03f) {
+            val inset = 3
+            val top = tinted(haze, alpha * eased * 0.17f)
+            val bottom = tinted(haze, alpha * eased * 0.08f)
+            graphics.fillGradient(x + inset, y + 2, x + width - inset, y + height - 2, top, bottom)
             val span = ((width - 12) * eased * 0.20f).roundToInt()
             graphics.fill(center - span, y + height - 2, center + span, y + height - 1,
                 tinted(accent, alpha * eased * 0.72f))
