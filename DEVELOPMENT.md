@@ -48,7 +48,9 @@ focused. Its fade into Spectator uses a short reflection and a low chime.
 Adjust these with `finalDeathThought` and `finalDeathSound`, and adjust the
 fade with `spectatorRevealTicks`. Limbo has a slow teal sky, softened world
 sounds, and a quiet arrival cue. Customize `limboText` and `limboSound`.
-The menu stays available, and operator release restores gameplay.
+The menu stays available. After operator release the stars dissolve into
+first person and world audio returns gradually. Adjust the wake-up with
+`limboWakeTicks`.
 Plain interface uses Minecraft's standard buttons. Reduced motion uses
 immediate highlights, a static sky, and a short fade with no camera movement.
 A world can enable the first-join sequence independently of its death rules.

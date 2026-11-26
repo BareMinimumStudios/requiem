@@ -58,6 +58,7 @@ object RequiemClient {
         val between = minecraft.screen as? BetweenScreen
         val frame = between?.warpAudioFrame()
             ?: (minecraft.screen as? SpectatorFadeScreen)?.audioFrame()
+            ?: (minecraft.screen as? LimboScreen)?.wakeAudioFrame()
             ?: limboConnection?.let { WarpAudioFrame(0f, 0f, 0.13f) }
             ?: handoff?.let {
                 if (it.finalDeath) it.screen.warpAudioFrame() else it.screen.primingAudio(it.ticks.toFloat())
@@ -98,7 +99,10 @@ object RequiemClient {
         }
         if (next.payload.presentation == DeathPresentation.LIMBO_EXIT) {
             limboConnection = null
-            if (minecraft.screen is LimboScreen) minecraft.setScreen(null)
+            (minecraft.screen as? LimboScreen)?.let { screen ->
+                if (config.playCinematics && !config.plainInterface) screen.beginWake()
+                else minecraft.setScreen(null)
+            }
             return
         }
         if (next.payload.presentation == DeathPresentation.CLOSE) {
