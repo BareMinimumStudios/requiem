@@ -36,7 +36,9 @@ moving through the world reveal. `twinkleHoldTicks` controls the pause on the
 star field after selecting Return to Existence. `warpTicks` controls the flight
 and reveal after the destination is ready. `revealTicks` controls the fade into
 first person and defaults to 52 ticks (2.6 seconds), within the 580-tick
-sequence. Toggle `colorfulStars` for the
+sequence. For the shorter timing and lower star count from the prior local
+settings, use warpTicks = 48, evealTicks = 18 and starCount = 240.
+Toggle `colorfulStars` for the
 occasional colored flares.
 The themed buttons ease in on hover and mark keyboard focus with bright
 corners. Final-death confirmation uses the same controls and starts with
@@ -126,3 +128,8 @@ Published Requiem JARs require neither Incapacitated nor Cardinal Components.
 - Hidden Fabric and NeoForge clients completed death, defer, reconnect, and
   return with the layered animation. The camera settled during the reveal and
   gameplay resumed in first person.
+
+- The integrated release JARs passed hidden production-client gameplay on
+  Fabric and NeoForge 1.21.1. Verified click-through dialogue and button audio,
+  newest-first memory playback, synchronized warp audio, return to first person,
+  world ambience recovery, and release of the captured frames.

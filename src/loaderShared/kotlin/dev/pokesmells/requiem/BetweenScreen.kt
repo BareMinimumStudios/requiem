@@ -130,8 +130,15 @@ class BetweenScreen(
         val fixedHeight = titleHeight + 12 + livesHeight + 18 + (buttonCount * 24 - 4)
         val maxLines = ((height - fixedHeight - 16) / font.lineHeight).coerceAtLeast(1)
         val wrapped = font.split(Component.literal(config.subtitle), textWidth)
-        subtitleLines = if (wrapped.size <= maxLines) wrapped
-            else wrapped.take(maxLines - 1) + Component.literal("…").visualOrderText
+        subtitleLines = when {
+            wrapped.size <= maxLines -> wrapped
+            maxLines == 1 -> {
+                val available = (textWidth - font.width("…")).coerceAtLeast(1)
+                val shortened = font.plainSubstrByWidth(config.subtitle, available).trimEnd()
+                listOf(Component.literal(shortened + "…").visualOrderText)
+            }
+            else -> wrapped.take(maxLines - 1) + Component.literal("…").visualOrderText
+        }
         val subtitleHeight = subtitleLines.size * font.lineHeight
         titleY = ((height - fixedHeight - subtitleHeight) / 2).coerceAtLeast(4)
         subtitleY = titleY + titleHeight + 12
@@ -206,7 +213,7 @@ class BetweenScreen(
         }
         val clock = sceneClock(renderPartial)
         val reveal = if (isTransition) timing.reveal(clock) else 0f
-        val emergence = if (isTransition || reducedMotion) 1f else smoothStep(clock / 19f)
+        val emergence = if (isTransition || reducedMotion) 1f else smoothStep(clock / 14f)
         val windup = returnStarted?.let { smoothStep((clock - it) / (twinkleHoldTicks - 1).coerceAtLeast(1)) } ?: 0f
         val darkness = if (isTransition) 1f - reveal else emergence
         val flightTicks = if (isTransition && !reducedMotion) clock else null
@@ -217,7 +224,8 @@ class BetweenScreen(
             else -> smoothStep((clock - dialogueChangedAt - 4f) / 12f) * (1f - windup)
         }
 
-        graphics.fillGradient(0, 0, width, height, tinted(0x03040c, darkness), tinted(config.skyColor, darkness))
+        val skyTop = if (isTransition) 0x03040c else 0x070814
+        graphics.fillGradient(0, 0, width, height, tinted(skyTop, darkness), tinted(config.skyColor, darkness))
         if (!config.plainInterface) {
             val starlight = if (isTransition) 1f - smoothStep((reveal - 0.16f) / 0.84f) else darkness
             drawParticles(graphics, width, height, starClockOffset + clock, starlight, flightTicks)
