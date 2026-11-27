@@ -6,6 +6,10 @@ All notable changes to Requiem are documented here. This project follows
 
 ## [Unreleased]
 
+### Changed
+
+- Updated Requiem to the Bare Minimum License v1.1.
+
 ## [0.1.1] - 2026-11-27
 
 ### Changed

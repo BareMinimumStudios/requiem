@@ -2,7 +2,7 @@
 
 **Summary** · A starlit death screen with fading memories, cinematic resurrection, and configurable lives.
 
-**Project setup** · Mod · Game Mechanics, Adventure · Client required, server required · Custom license (The Bare Minimum License v1.0)
+**Project setup** · Mod · Game Mechanics, Adventure · Client required, server required · Custom license (The Bare Minimum License v1.1)
 
 Use `requiem-cinematics` if available. Use studio-created artwork for the icon and banner and studio-captured gameplay for the gallery.
 
@@ -40,6 +40,6 @@ Settings are in `config/requiem_cinematics/settings.toml`. The server controls l
 
 - [Documentation](https://github.com/BareMinimumStudios/requiem#readme) · [Source code](https://github.com/BareMinimumStudios/requiem) · [Report an issue](https://github.com/BareMinimumStudios/requiem/issues)
 - [Bare Minimum Studios](https://github.com/BareMinimumStudios) · [Community Discord](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
-- [The Bare Minimum License v1.0](https://github.com/BareMinimumStudios/requiem/blob/HEAD/LICENSE)
+- [The Bare Minimum License v1.1](https://github.com/BareMinimumStudios/requiem/blob/HEAD/LICENSE)
 
 When reporting a bug, include your Requiem version, loader, and the relevant client or server log.

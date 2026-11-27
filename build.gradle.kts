@@ -35,7 +35,7 @@ cloche {
         name = "Requiem"
         icon = "assets/requiem_cinematics/icon.png"
         description = "Cinematic death, resurrection, and configurable mortality."
-        license = "BML-1.0"
+        license = "BML-1.1"
         author("pokesmells")
         url = "https://github.com/BareMinimumStudios/requiem"
         dependencies {

@@ -66,4 +66,4 @@ Run `gradlew.bat build` on Windows or `./gradlew build` with Java 21. The loader
 
 Requiem uses the internal mod ID `requiem_cinematics`.
 
-[The Bare Minimum License v1.0](LICENSE) applies to the project.
+[The Bare Minimum License v1.1](LICENSE) applies to the project.
