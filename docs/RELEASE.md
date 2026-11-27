@@ -1,0 +1,8 @@
+# Requiem release handoff
+
+- The suggested public listing title is **Requiem Cinematics**. [CurseForge](https://www.curseforge.com/minecraft/mc-mods/requiem) and [Modrinth](https://modrinth.com/mod/requiem) already have a Requiem project from Ladysnake. Confirm the suggested slug in each dashboard before adding links to the README.
+- The current installer artifacts are marked `0.1.0-dev`. Confirm the release version and release channel before uploading. If the version changes, rebuild and smoke-test the exact files that will be uploaded.
+- Create separate Fabric and NeoForge version entries for Minecraft 1.21.1. Mark Fzzy Config required for both, Fabric API and Fabric Language Kotlin required for Fabric, and Kotlin for Forge required for NeoForge. Treat Incapacitated as optional.
+- Use the original studio-owned return track for redistribution. Add the track's attribution when submitting on CurseForge.
+- **Modrinth review** · The [content rules](https://modrinth.com/legal/rules/#6-usage-of-generative-ai) require the platform disclosure when description or publishing relies on generative AI, prohibit generated or derived page images, and bar public publication when the project contents are primarily or entirely generated. Review project eligibility before submission. Use studio-created branding for Modrinth and keep the supplied pixel artwork on GitHub and CurseForge.
+- **CurseForge review** · Follow the [submission guide](https://support.curseforge.com/support/solutions/articles/9000197241-creating-and-submitting-a-project). Upload title artwork as branding. Use genuine gameplay for the gallery.
