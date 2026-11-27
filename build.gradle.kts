@@ -33,6 +33,7 @@ cloche {
     metadata {
         modId = "requiem_cinematics"
         name = "Requiem"
+        icon = "assets/requiem_cinematics/icon.png"
         description = "Cinematic death, resurrection, and configurable mortality."
         license = "BML-1.0"
         author("pokesmells")
