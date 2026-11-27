@@ -1,0 +1,153 @@
+name: publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version, for example 0.1.0
+        required: true
+        type: string
+      target:
+        description: Stage only, or select an explicit publishing destination
+        required: true
+        default: stage
+        type: choice
+        options:
+          - stage
+          - fabric-curseforge
+          - neoforge-curseforge
+          - fabric-modrinth
+          - neoforge-modrinth
+          - github
+
+permissions:
+  contents: read
+
+concurrency:
+  group: requiem-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - run: chmod +x gradlew
+      - name: Build and verify release JARs
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: ./scripts/build-release.ps1 -Version $env:RELEASE_VERSION -RequireReleaseVersion
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: requiem-1.21.1-jars
+          path: build/release/${{ inputs.version }}/
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-mod:
+    needs: build
+    if: inputs.target != 'stage' && inputs.target != 'github'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: curseforge
+            loader: fabric
+            dependencies: |
+              fabric-api(required){modrinth:fabric-api}{curseforge:fabric-api}
+              fabric-language-kotlin(required){modrinth:fabric-language-kotlin}{curseforge:fabric-language-kotlin}
+              fzzy_config(required){modrinth:fzzy-config}{curseforge:fzzy-config}
+              incapacitated(optional){modrinth:CmDgNtOI}{curseforge:incapacitated}
+          - platform: curseforge
+            loader: neoforge
+            dependencies: |
+              kotlinforforge(required){modrinth:kotlin-for-forge}{curseforge:kotlin-for-forge}
+              fzzy_config(required){modrinth:fzzy-config}{curseforge:fzzy-config}
+              incapacitated(optional){modrinth:CmDgNtOI}{curseforge:incapacitated}
+          - platform: modrinth
+            loader: fabric
+            dependencies: |
+              fabric-api(required){modrinth:fabric-api}{curseforge:fabric-api}
+              fabric-language-kotlin(required){modrinth:fabric-language-kotlin}{curseforge:fabric-language-kotlin}
+              fzzy_config(required){modrinth:fzzy-config}{curseforge:fzzy-config}
+              incapacitated(optional){modrinth:CmDgNtOI}{curseforge:incapacitated}
+          - platform: modrinth
+            loader: neoforge
+            dependencies: |
+              kotlinforforge(required){modrinth:kotlin-for-forge}{curseforge:kotlin-for-forge}
+              fzzy_config(required){modrinth:fzzy-config}{curseforge:fzzy-config}
+              incapacitated(optional){modrinth:CmDgNtOI}{curseforge:incapacitated}
+    steps:
+      - name: Check publishing credentials
+        if: inputs.target == format('{0}-{1}', matrix.loader, matrix.platform)
+        shell: bash
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID }}
+          PUBLISH_TOKEN: ${{ matrix.platform == 'curseforge' && secrets.CURSEFORGE_TOKEN || matrix.platform == 'modrinth' && secrets.MODRINTH_TOKEN || '' }}
+        run: |
+          if [[ -z "$PUBLISH_TOKEN" ]]; then
+            echo "Missing publishing token for $PLATFORM." >&2
+            exit 1
+          fi
+          if [[ "$PLATFORM" == modrinth && -z "$MODRINTH_PROJECT_ID" ]]; then
+            echo "Missing MODRINTH_PROJECT_ID repository variable." >&2
+            exit 1
+          fi
+      - name: Download verified builds
+        if: inputs.target == format('{0}-{1}', matrix.loader, matrix.platform)
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: requiem-1.21.1-jars
+          path: build/release
+      - name: Publish selected build
+        if: inputs.target == format('{0}-{1}', matrix.loader, matrix.platform)
+        uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075
+        with:
+          curseforge-id: ${{ matrix.platform == 'curseforge' && '1834464' || '' }}
+          curseforge-token: ${{ matrix.platform == 'curseforge' && secrets.CURSEFORGE_TOKEN || '' }}
+          modrinth-id: ${{ matrix.platform == 'modrinth' && vars.MODRINTH_PROJECT_ID || '' }}
+          modrinth-token: ${{ matrix.platform == 'modrinth' && secrets.MODRINTH_TOKEN || '' }}
+          files: build/release/Requiem-${{ inputs.version }}-${{ matrix.loader }}-1.21.1.jar
+          name: Requiem ${{ inputs.version }} · ${{ matrix.loader }} · 1.21.1
+          version: ${{ inputs.version }}+1.21.1-${{ matrix.loader }}
+          version-type: release
+          changelog-file: build/release/RELEASE-NOTES.md
+          loaders: ${{ matrix.loader }}
+          environment: client | server
+          game-versions: '1.21.1'
+          dependencies: ${{ matrix.dependencies }}
+          java: '21'
+          fail-mode: fail
+
+  github-release:
+    needs: build
+    if: inputs.target == 'github'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: requiem-1.21.1-jars
+          path: build/release
+      - name: Create or update GitHub release
+        uses: Kira-NT/mc-publish@52307b03863581dec6b652b83e597aec02ebb075
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-tag: v${{ inputs.version }}
+          github-commitish: ${{ github.sha }}
+          files: build/release/*.jar
+          name: Requiem ${{ inputs.version }}
+          version: ${{ inputs.version }}
+          version-type: release
+          changelog-file: build/release/RELEASE-NOTES.md
+          fail-mode: fail

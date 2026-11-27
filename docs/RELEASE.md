@@ -6,3 +6,11 @@
 - Use the original studio-owned return track for redistribution. Add the track's attribution when submitting on CurseForge.
 - **Modrinth review** · The [content rules](https://modrinth.com/legal/rules/#6-usage-of-generative-ai) require the platform disclosure when description or publishing relies on generative AI, prohibit generated or derived page images, and bar public publication when the project contents are primarily or entirely generated. Review project eligibility before submission. Use studio-created branding for Modrinth and keep the supplied pixel artwork on GitHub and CurseForge.
 - **CurseForge review** · Follow the [submission guide](https://support.curseforge.com/support/solutions/articles/9000197241-creating-and-submitting-a-project). Upload title artwork as branding. Use genuine gameplay for the gallery.
+
+## Build and publish
+
+Run `pwsh -File scripts/build-release.ps1 -Offline` to build, test, and stage both local JARs with checksums under `build/release/<version>/`. Omit `-Offline` when dependencies need to download. Use `-Version 0.1.0` to stage a specific version without changing `gradle.properties`.
+
+The GitHub **build** workflow runs on main and pull requests. The **publish** workflow is manual and starts with **stage** selected. Download and smoke-test the staged JARs before choosing a publishing destination. Select the same commit and version for each destination. The workflow accepts stable versions and takes its text from `RELEASE-NOTES.md`.
+
+CurseForge uses project `1834464` and the `CURSEFORGE_TOKEN` Actions secret. For Modrinth, copy the project ID for `requiem-cinematics` from the dashboard into the `MODRINTH_PROJECT_ID` Actions variable and configure the `MODRINTH_TOKEN` secret. Confirm the Modrinth eligibility and disclosure review above before selecting it. The GitHub target uses the workflow token to create a release with both loaders. Each external loader target runs separately, so a retry can be limited to the failed upload.
