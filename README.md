@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/requiem-banner.png" alt="Requiem, a block dissolving beneath a starfield" width="100%">
+<img src="docs/assets/requiem-banner.png" alt="Requiem, a faceted eye with floating shards in a starfield" width="100%">
 
 **Minecraft 1.21.1 · Fabric + NeoForge · Java 21**
 
