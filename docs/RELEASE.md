@@ -11,7 +11,7 @@
 
 Run `pwsh -File scripts/build-release.ps1 -Offline` to build, test, and stage both local JARs with checksums under `build/release/<version>/`. Omit `-Offline` when dependencies need to download. Use `-Version 0.1.1` to stage a specific version without changing `gradle.properties`.
 
-The GitHub **build** workflow runs on main and pull requests. The **publish** workflow is manual and starts with **stage** selected. Download and smoke-test the staged JARs before choosing a publishing destination. Select the same commit and version for each destination. The workflow accepts stable versions with a dated entry in CHANGELOG.md.
+The GitHub **build** workflow runs on main and pull requests. The manual **publish** workflow reads the stable version from gradle.properties on the selected ref and requires a matching dated entry in CHANGELOG.md. Use **stage** to build and smoke-test both JARs. Select **all** to publish both loaders to Modrinth and CurseForge and create one GitHub release. Use the same commit for staging and publishing.
 
 CurseForge uses project `1834464` and the `CURSEFORGE_TOKEN` Actions secret. Modrinth uses project `O8SDSjiJ` and the `MODRINTH_TOKEN` Actions secret. Confirm the Modrinth eligibility and disclosure review above before selecting it. The GitHub target uses the workflow token to create a release with both loaders. Each external loader target runs separately, so a retry can be limited to the failed upload.
 

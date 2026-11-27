@@ -81,5 +81,8 @@ try {
         "$($hash.Hash.ToLowerInvariant())  $($jar.Name)"
     }
     $checksums | Set-Content -LiteralPath (Join-Path $stage.FullName 'SHA256SUMS') -Encoding utf8
+    if ($env:GITHUB_OUTPUT) {
+        Add-Content -LiteralPath $env:GITHUB_OUTPUT -Value "version=$Version" -Encoding utf8
+    }
     Write-Host "Verified release files staged in $($stage.FullName)"
 } finally { Pop-Location }
