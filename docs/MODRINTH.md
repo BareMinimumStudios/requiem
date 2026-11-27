@@ -8,40 +8,38 @@ Use `requiem-cinematics` if available. Use studio-created artwork for the icon a
 
 ---
 
-![Blue stars shimmer across The Between in Minecraft](https://cdn.modrinth.com/data/cached_images/4d92cb3717ef995587f3cd60cf7f9eb1329eee08.png)
+# Requiem
 
 **Minecraft 1.21.1 · Fabric + NeoForge · Java 21**
 
-## The Between
+A few stars come into focus. *Where… am I?*
 
-A few stars come into focus. A question appears. *Where… am I?*
+Requiem replaces Minecraft’s death screen with **The Between**, a quiet place to decide whether to return. Your last moments flicker past in reverse as the stars stretch into lightspeed. The camera eases into first person, and the sounds of the world gradually return.
 
-Requiem replaces the usual death screen with a quiet space called The Between. Click through a short dialogue, then choose whether to return to the world or decide later. When you return, faint glimpses of your last moments play newest first and recede as the stars stretch into lightspeed. The camera settles into first person as the soundtrack gives way to the sounds around you.
+## How it works
 
-The glimpses come from your own play session. They’re low-resolution on purpose, held in memory, and never written to disk by Requiem.
-
-## Decide what death costs
-
-- **Unlimited** is the default. Return as often as you like, with the life counter hidden.
-- **Limited** gives players a configurable number of lives.
-- **Hardcore** makes the first qualifying death final.
-- **Disabled** leaves the player on Minecraft's usual death flow.
-
-Servers can decide which PvP, mob, and environmental deaths count, credit a recent attacker, and set exceptions by UUID or player name. Pending decisions survive disconnects and server restarts. Servers can also allow players to choose final death voluntarily. Final death asks for confirmation and can lead to Spectator, a dreamlike Limbo with an operator-controlled wake-up, or a dedicated-server ban.
-
-## Make it fit your world
-
-Change the dialogue, colors, particle density, timing, and sounds. Enable a first-join cinematic, turn off memories, or choose reduced motion, standard buttons, or muted cinematics. The death scene leaves the death reason out.
+- **Return or decide later.** Unlimited lives are the default, and the life counter is hidden unless you enable it. Pending decisions survive reconnects and server restarts.
+- **Set the stakes for your world.** Choose Unlimited, Limited, Hardcore, or Disabled. Set exceptions by player UUID or name and pick which PvP, mob, and environmental deaths count.
+- **Choose what final death means.** After confirmation, players can enter Spectator, wait in Limbo for an operator to release them, or be banned from a dedicated server.
+- **Make the scene your own.** Adjust dialogue, colors, particles, timing, and sound. Enable a first-join cinematic or use reduced motion, standard buttons, or muted cinematics. The optional fading memories stay in client memory and are never written to disk by Requiem.
 
 ## Installation
 
-Use the matching Requiem build on the client and server.
+Install the matching Requiem file and dependencies on the server and each client. Singleplayer uses the same client installation.
 
-| Loader | Required dependencies |
-| --- | --- |
-| Fabric | Fabric API, Fabric Language Kotlin, Fzzy Config |
-| NeoForge | Kotlin for Forge, Fzzy Config |
+- **Fabric** · Fabric API, Fabric Language Kotlin, and Fzzy Config.
+- **NeoForge** · Kotlin for Forge and Fzzy Config.
 
-Incapacitated 2.0.1 is optional. Requiem waits for an actual death before opening The Between. A successful revive leaves the player's lives alone. Give-up and overkill were checked on dedicated Fabric and NeoForge servers.
+**Incapacitated 2.0.1** is optional. A successful revive does not spend a life. Give-up and overkill were tested on dedicated servers with both loaders.
 
-[Source and setup](https://github.com/BareMinimumStudios/requiem) · [Issues](https://github.com/BareMinimumStudios/requiem/issues) · [Community Discord](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
+## Configuration
+
+Settings are in `config/requiem_cinematics/settings.toml`. The server controls life rules and final outcomes. Cinematic preferences are client-side. Operators can release a player from Limbo with `/requiem release <online player> <lives>`.
+
+## Links and support
+
+- [Documentation](https://github.com/BareMinimumStudios/requiem#readme) · [Source code](https://github.com/BareMinimumStudios/requiem) · [Report an issue](https://github.com/BareMinimumStudios/requiem/issues)
+- [Bare Minimum Studios](https://github.com/BareMinimumStudios) · [Community Discord](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
+- [The Bare Minimum License v1.0](https://github.com/BareMinimumStudios/requiem/blob/HEAD/LICENSE)
+
+When reporting a bug, include your Requiem version, loader, and the relevant client or server log.
