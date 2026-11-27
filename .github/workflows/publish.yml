@@ -20,6 +20,9 @@ on:
           - neoforge-modrinth
           - github
 
+env:
+  MODRINTH_PROJECT_ID: O8SDSjiJ
+
 permissions:
   contents: read
 
@@ -90,15 +93,10 @@ jobs:
         shell: bash
         env:
           PLATFORM: ${{ matrix.platform }}
-          MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID }}
           PUBLISH_TOKEN: ${{ matrix.platform == 'curseforge' && secrets.CURSEFORGE_TOKEN || matrix.platform == 'modrinth' && secrets.MODRINTH_TOKEN || '' }}
         run: |
           if [[ -z "$PUBLISH_TOKEN" ]]; then
             echo "Missing publishing token for $PLATFORM." >&2
-            exit 1
-          fi
-          if [[ "$PLATFORM" == modrinth && -z "$MODRINTH_PROJECT_ID" ]]; then
-            echo "Missing MODRINTH_PROJECT_ID repository variable." >&2
             exit 1
           fi
       - name: Download verified builds
@@ -113,7 +111,7 @@ jobs:
         with:
           curseforge-id: ${{ matrix.platform == 'curseforge' && '1834464' || '' }}
           curseforge-token: ${{ matrix.platform == 'curseforge' && secrets.CURSEFORGE_TOKEN || '' }}
-          modrinth-id: ${{ matrix.platform == 'modrinth' && vars.MODRINTH_PROJECT_ID || '' }}
+          modrinth-id: ${{ matrix.platform == 'modrinth' && env.MODRINTH_PROJECT_ID || '' }}
           modrinth-token: ${{ matrix.platform == 'modrinth' && secrets.MODRINTH_TOKEN || '' }}
           files: build/release/Requiem-${{ inputs.version }}+1.21.1-${{ matrix.loader }}.jar
           name: ${{ inputs.version }}+1.21.1-${{ matrix.loader }}

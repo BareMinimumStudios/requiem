@@ -13,6 +13,6 @@ Run `pwsh -File scripts/build-release.ps1 -Offline` to build, test, and stage bo
 
 The GitHub **build** workflow runs on main and pull requests. The **publish** workflow is manual and starts with **stage** selected. Download and smoke-test the staged JARs before choosing a publishing destination. Select the same commit and version for each destination. The workflow accepts stable versions and takes its text from `RELEASE-NOTES.md`.
 
-CurseForge uses project `1834464` and the `CURSEFORGE_TOKEN` Actions secret. For Modrinth, copy the project ID for `requiem-cinematics` from the dashboard into the `MODRINTH_PROJECT_ID` Actions variable and configure the `MODRINTH_TOKEN` secret. Confirm the Modrinth eligibility and disclosure review above before selecting it. The GitHub target uses the workflow token to create a release with both loaders. Each external loader target runs separately, so a retry can be limited to the failed upload.
+CurseForge uses project `1834464` and the `CURSEFORGE_TOKEN` Actions secret. Modrinth uses project `O8SDSjiJ` and the `MODRINTH_TOKEN` Actions secret. Confirm the Modrinth eligibility and disclosure review above before selecting it. The GitHub target uses the workflow token to create a release with both loaders. Each external loader target runs separately, so a retry can be limited to the failed upload.
 
 Both platforms display versions as X.Y.Z+1.21.1-fabric or X.Y.Z+1.21.1-neoforge. The staged JAR filenames use that same format. Each version receives the staged RELEASE-NOTES.md as its changelog.
