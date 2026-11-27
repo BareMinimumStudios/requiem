@@ -4,7 +4,7 @@
 
 **Minecraft 1.21.1 · Fabric + NeoForge · Java 21**
 
-[License](LICENSE) · [Issues](https://github.com/BareMinimumStudios/requiem/issues) · [Community](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
+[License](LICENSE) · [Changelog](CHANGELOG.md) · [Issues](https://github.com/BareMinimumStudios/requiem/issues) · [Community](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
 
 </div>
 

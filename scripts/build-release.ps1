@@ -1,6 +1,6 @@
 param(
     [string]$Version,
-    [switch]$RequireReleaseVersion,
+
     [switch]$Offline
 )
 
@@ -11,15 +11,23 @@ if (!$Version) {
     $versionLine = Select-String -LiteralPath $properties -Pattern '^mod_version=(.+)$'
     $Version = $versionLine.Matches[0].Groups[1].Value.Trim()
 }
-if ($Version -cnotmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$') {
-    throw "Invalid Requiem version: $Version"
-}
-if ($RequireReleaseVersion -and $Version.Contains('-')) {
-    throw 'Publishing requires a stable X.Y.Z version.'
+if ($Version -cnotmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') {
+    throw "Requiem requires a stable X.Y.Z version: $Version"
 }
 
 Push-Location $root
 try {
+    $changelog = Get-Content -LiteralPath 'CHANGELOG.md' -Raw
+    $heading = '(?m)^## \[' + [regex]::Escape($Version) + '\] - \d{4}-\d{2}-\d{2}[ \t]*\r?$'
+    $matchesForVersion = [regex]::Matches($changelog, $heading)
+    if ($matchesForVersion.Count -ne 1) { throw "Expected one dated changelog entry for $Version." }
+    $entry = $matchesForVersion[0]
+    $remaining = $changelog.Substring($entry.Index + $entry.Length)
+    $notes = ($remaining -split '(?m)^(?:## |\[[^\]\r\n]+\]:)', 2)[0].Trim()
+    if ($notes -notmatch '(?m)^### (Added|Changed|Deprecated|Removed|Fixed|Security)\s*$' -or $notes -notmatch '(?m)^- \S') {
+        throw "The changelog entry for $Version needs a category and at least one change."
+    }
+
     $wrapper = if ($IsWindows) { '.\gradlew.bat' } else { './gradlew' }
     $arguments = @('build', '--console=plain', "-Pmod_version=$Version")
     if ($Offline) { $arguments += '--offline' }
@@ -58,8 +66,7 @@ try {
     }
 
     $stage = New-Item -ItemType Directory -Path "build/release/$Version" -Force
-    $notes = Get-Content -LiteralPath 'RELEASE-NOTES.md' -Raw
-    if ([string]::IsNullOrWhiteSpace($notes)) { throw 'RELEASE-NOTES.md is empty.' }
+
 
     $stagedJars = foreach ($loader in 'fabric', 'neoforge') {
         $source = $jars | Where-Object Name -CEQ "Requiem-$Version-$loader-1.21.1.jar"
@@ -68,7 +75,7 @@ try {
         Copy-Item -LiteralPath $source.FullName -Destination $target -Force
         Get-Item -LiteralPath $target
     }
-    Copy-Item -LiteralPath 'RELEASE-NOTES.md' -Destination $stage.FullName -Force
+    @("# Requiem $Version", '', $notes) | Set-Content -LiteralPath (Join-Path $stage.FullName 'RELEASE-NOTES.md') -Encoding utf8
     $checksums = foreach ($jar in $stagedJars) {
         $hash = Get-FileHash -LiteralPath (Join-Path $stage.FullName $jar.Name)
         "$($hash.Hash.ToLowerInvariant())  $($jar.Name)"

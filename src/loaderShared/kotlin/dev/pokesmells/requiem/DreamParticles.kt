@@ -50,9 +50,9 @@ internal class DreamParticles {
             val y = star.y * halfHeight * projection
             val exposure = speed * (1.9f + star.phase * 2.5f)
             val tailRatio = depth / (depth + exposure)
-            if (abs(x * tailRatio) > halfWidth + 6f ||
-                abs(y * tailRatio) > halfHeight + 6f
-            ) continue
+            val tailOffsetX = x * tailRatio
+            val tailOffsetY = y * tailRatio
+            if (abs(tailOffsetX) > halfWidth + 6f || abs(tailOffsetY) > halfHeight + 6f) continue
 
             val wave = if (!anchored) 0f else if (reducedMotion) 0.78f else
                 (1f + sin(star.phase * TAU + skyClock * star.rate)) * 0.5f
@@ -82,7 +82,7 @@ internal class DreamParticles {
             if (pointerX != null) {
                 val dx = headX - pointerX
                 val dy = headY - pointerY
-                val distance = hypot(dx, dy)
+                val distance = if (abs(dx) < pointerRadius && abs(dy) < pointerRadius) hypot(dx, dy) else 0f
                 if (distance in 0.01f..<pointerRadius) {
                     val push = 8f * smoothStep(1f - distance / pointerRadius) * distance / (distance + 12f)
                     headX += dx * push / distance
@@ -97,8 +97,8 @@ internal class DreamParticles {
             if (stretch > 0f) {
                 val radius = hypot(x, y).coerceAtLeast(0.001f)
                 val trailOpacity = if (anchored) brightness * stretch else brightness
-                val tailX = halfWidth + x * tailRatio
-                val tailY = halfHeight + y * tailRatio
+                val tailX = halfWidth + tailOffsetX
+                val tailY = halfHeight + tailOffsetY
                 val acrossX = -y / radius
                 val acrossY = x / radius
                 if (layer.size > 1) {

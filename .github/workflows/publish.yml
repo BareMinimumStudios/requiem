@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version, for example 0.1.0
+        description: Release version, for example 0.1.1
         required: true
         type: string
       target:
@@ -45,7 +45,7 @@ jobs:
         shell: pwsh
         env:
           RELEASE_VERSION: ${{ inputs.version }}
-        run: ./scripts/build-release.ps1 -Version $env:RELEASE_VERSION -RequireReleaseVersion
+        run: ./scripts/build-release.ps1 -Version $env:RELEASE_VERSION
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: requiem-1.21.1-jars
@@ -142,6 +142,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           github-tag: v${{ inputs.version }}
+          github-prerelease: false
           github-commitish: ${{ github.sha }}
           files: |
             build/release/Requiem-${{ inputs.version }}+1.21.1-fabric.jar
