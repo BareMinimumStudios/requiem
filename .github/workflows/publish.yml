@@ -115,8 +115,8 @@ jobs:
           curseforge-token: ${{ matrix.platform == 'curseforge' && secrets.CURSEFORGE_TOKEN || '' }}
           modrinth-id: ${{ matrix.platform == 'modrinth' && vars.MODRINTH_PROJECT_ID || '' }}
           modrinth-token: ${{ matrix.platform == 'modrinth' && secrets.MODRINTH_TOKEN || '' }}
-          files: build/release/Requiem-${{ inputs.version }}-${{ matrix.loader }}-1.21.1.jar
-          name: Requiem ${{ inputs.version }} · ${{ matrix.loader }} · 1.21.1
+          files: build/release/Requiem-${{ inputs.version }}+1.21.1-${{ matrix.loader }}.jar
+          name: ${{ inputs.version }}+1.21.1-${{ matrix.loader }}
           version: ${{ inputs.version }}+1.21.1-${{ matrix.loader }}
           version-type: release
           changelog-file: build/release/RELEASE-NOTES.md
@@ -145,7 +145,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           github-tag: v${{ inputs.version }}
           github-commitish: ${{ github.sha }}
-          files: build/release/*.jar
+          files: |
+            build/release/Requiem-${{ inputs.version }}+1.21.1-fabric.jar
+            build/release/Requiem-${{ inputs.version }}+1.21.1-neoforge.jar
           name: Requiem ${{ inputs.version }}
           version: ${{ inputs.version }}
           version-type: release

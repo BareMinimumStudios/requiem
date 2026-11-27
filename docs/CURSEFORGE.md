@@ -8,6 +8,8 @@ Use `requiem-cinematics` if available. Use the square logo for the project icon 
 
 ---
 
+![Requiem banner](https://media.forgecdn.net/attachments/2285/96/requiem-banner-png.png)
+
 **Minecraft 1.21.1 · Fabric + NeoForge · Java 21**
 
 ## The Between
@@ -17,6 +19,8 @@ A few stars come into focus. A question appears. *Where… am I?*
 Requiem replaces the usual death screen with a quiet space called The Between. Click through a short dialogue, then choose whether to return to the world or decide later. When you return, faint glimpses of your last moments play newest first and recede as the stars stretch into lightspeed. The camera settles into first person as the soundtrack gives way to the sounds around you.
 
 The glimpses come from your own play session. They’re low-resolution on purpose, held in memory, and never written to disk by Requiem.
+
+![The Between in Minecraft](https://media.forgecdn.net/attachments/2285/95/requiem-star-flight-twinkle-png.png)
 
 ## Decide what death costs
 
@@ -42,4 +46,4 @@ Use the matching Requiem build on the client and server.
 
 Incapacitated 2.0.1 is optional. Requiem waits for an actual death before opening The Between. A successful revive leaves the player's lives alone. Give-up and overkill were checked on dedicated Fabric and NeoForge servers.
 
-[Source and setup](https://github.com/BareMinimumStudios/requiem) · [Issues](https://github.com/BareMinimumStudios/requiem/issues) · [Community Discord](https://discord.gg/pcRw79hwey)
+[Source and setup](https://github.com/BareMinimumStudios/requiem) · [Issues](https://github.com/BareMinimumStudios/requiem/issues) · [Community Discord](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)

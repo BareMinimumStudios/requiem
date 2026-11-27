@@ -8,6 +8,8 @@ Use `requiem-cinematics` if available. Use studio-created artwork for the icon a
 
 ---
 
+![Blue stars shimmer across The Between in Minecraft](https://cdn.modrinth.com/data/cached_images/4d92cb3717ef995587f3cd60cf7f9eb1329eee08.png)
+
 **Minecraft 1.21.1 · Fabric + NeoForge · Java 21**
 
 ## The Between
@@ -42,4 +44,4 @@ Use the matching Requiem build on the client and server.
 
 Incapacitated 2.0.1 is optional. Requiem waits for an actual death before opening The Between. A successful revive leaves the player's lives alone. Give-up and overkill were checked on dedicated Fabric and NeoForge servers.
 
-[Source and setup](https://github.com/BareMinimumStudios/requiem) · [Issues](https://github.com/BareMinimumStudios/requiem/issues) · [Community Discord](https://discord.gg/pcRw79hwey)
+[Source and setup](https://github.com/BareMinimumStudios/requiem) · [Issues](https://github.com/BareMinimumStudios/requiem/issues) · [Community Discord](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)

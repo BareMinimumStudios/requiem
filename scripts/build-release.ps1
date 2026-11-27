@@ -58,9 +58,18 @@ try {
     }
 
     $stage = New-Item -ItemType Directory -Path "build/release/$Version" -Force
-    foreach ($jar in $jars) { Copy-Item -LiteralPath $jar.FullName -Destination $stage.FullName -Force }
+    $notes = Get-Content -LiteralPath 'RELEASE-NOTES.md' -Raw
+    if ([string]::IsNullOrWhiteSpace($notes)) { throw 'RELEASE-NOTES.md is empty.' }
+
+    $stagedJars = foreach ($loader in 'fabric', 'neoforge') {
+        $source = $jars | Where-Object Name -CEQ "Requiem-$Version-$loader-1.21.1.jar"
+        $name = "Requiem-$Version+1.21.1-$loader.jar"
+        $target = Join-Path $stage.FullName $name
+        Copy-Item -LiteralPath $source.FullName -Destination $target -Force
+        Get-Item -LiteralPath $target
+    }
     Copy-Item -LiteralPath 'RELEASE-NOTES.md' -Destination $stage.FullName -Force
-    $checksums = foreach ($jar in $jars) {
+    $checksums = foreach ($jar in $stagedJars) {
         $hash = Get-FileHash -LiteralPath (Join-Path $stage.FullName $jar.Name)
         "$($hash.Hash.ToLowerInvariant())  $($jar.Name)"
     }
