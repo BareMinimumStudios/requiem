@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundSource
 import net.minecraft.util.RandomSource
+import kotlin.math.abs
 
 internal object RequiemAudio {
     private var lastHover = 0L
@@ -56,7 +57,7 @@ internal object RequiemAudio {
         val floor = config.warpWorldVolume.coerceIn(0.01, 1.0).toFloat()
         val worldTarget = floor + (1f - floor) * blend
         worldGain += (worldTarget - worldGain) * 0.45f
-        if (kotlin.math.abs(worldTarget - worldGain) < 0.001f) worldGain = worldTarget
+        if (abs(worldTarget - worldGain) < 0.001f) worldGain = worldTarget
 
         val audioEnabled = !config.muteCinematics && config.playCinematics
         if (frame == null || !audioEnabled) {

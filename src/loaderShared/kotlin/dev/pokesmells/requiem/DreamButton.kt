@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.Button
 import net.minecraft.client.sounds.SoundManager
 import net.minecraft.network.chat.Component
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 internal fun dreamButton(
     x: Int, y: Int, width: Int, message: Component, action: () -> Unit,
@@ -50,7 +51,7 @@ private class DreamButton(
         val haze = mixRgb(0x6076AA, accent, eased)
         for (row in -8..8) {
             val shape = 1f - (row * row) / 81f
-            val span = (halfSpan * kotlin.math.sqrt(shape)).roundToInt()
+            val span = (halfSpan * sqrt(shape)).roundToInt()
             graphics.fill(center - span, midY + row, center + span, midY + row + 1,
                 tinted(haze, alpha * shape * (0.08f - 0.04f * eased)))
         }

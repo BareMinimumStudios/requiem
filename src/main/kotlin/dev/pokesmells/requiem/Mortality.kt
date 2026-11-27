@@ -1,5 +1,6 @@
 package dev.pokesmells.requiem
 
+import java.util.Locale
 import java.util.UUID
 
 enum class MortalityMode { UNLIMITED, LIMITED, HARDCORE, DISABLED }
@@ -30,7 +31,7 @@ data class MortalityRules(
         previousGameMode: String? = null,
     ): PlayerRecord {
         if (previous.pending != null || previous.finalPolicy != null) return previous
-        val override = overrides[player.toString()] ?: overrides[name.lowercase(java.util.Locale.ROOT)]
+        val override = overrides[player.toString()] ?: overrides[name.lowercase(Locale.ROOT)]
         val effectiveMode = override?.mode ?: mode
         if (effectiveMode == MortalityMode.DISABLED) return previous
 

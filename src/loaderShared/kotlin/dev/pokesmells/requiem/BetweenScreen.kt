@@ -7,7 +7,9 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.network.chat.Component
 import net.minecraft.util.FormattedCharSequence
 import org.lwjgl.glfw.GLFW
+import java.util.UUID
 import kotlin.math.ceil
+import kotlin.math.exp
 
 class BetweenScreen(
     private val view: DeathView,
@@ -188,7 +190,7 @@ class BetweenScreen(
         actionButtons.add(addRenderableWidget(button))
     }
 
-    internal fun isDecisionFor(transaction: java.util.UUID): Boolean = !isTransition && view.transaction == transaction
+    internal fun isDecisionFor(transaction: UUID): Boolean = !isTransition && view.transaction == transaction
 
     private fun choose(choice: Decision) {
         if (choiceSent || returnStarted != null) return
@@ -234,7 +236,7 @@ class BetweenScreen(
         val flightTicks = if (isTransition && !reducedMotion) clock else null
         val cursor = !isTransition && !reducedMotion && config.cursorStarDrift
         if (cursor) {
-            val amount = (1f - kotlin.math.exp(-(clock - pointerClock).coerceIn(0f, 4f) * 0.28f))
+            val amount = (1f - exp(-(clock - pointerClock).coerceIn(0f, 4f) * 0.28f))
             pointerX += ((mouseX.toFloat() / width.coerceAtLeast(1)).coerceIn(0f, 1f) - pointerX) * amount
             pointerY += ((mouseY.toFloat() / height.coerceAtLeast(1)).coerceIn(0f, 1f) - pointerY) * amount
         }

@@ -13,6 +13,7 @@ import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.Mob
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.GameType
+import java.util.Locale
 import java.util.UUID
 
 object RequiemServer {
@@ -34,7 +35,7 @@ object RequiemServer {
         val current = data.record(player.uuid)
         val updated = config.rules().begin(
             player.uuid, player.gameProfile.name, cause, current,
-            previousGameMode = player.gameMode.gameModeForPlayer.name.lowercase(java.util.Locale.ROOT),
+            previousGameMode = player.gameMode.gameModeForPlayer.name.lowercase(Locale.ROOT),
         )
         if (updated == current) return
         data.update(player.uuid, updated)

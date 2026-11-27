@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer
 import net.minecraft.client.renderer.RenderType
 import org.joml.Matrix4f
 import net.minecraft.client.gui.GuiGraphics
+import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.random.Random
@@ -33,6 +34,7 @@ internal class DreamParticles {
         val limit = if (stretch > 0f) anchorCount * 3 else anchorCount
         val halfWidth = width * 0.5f
         val halfHeight = height * 0.5f
+        val pointerRadius = minOf(width, height) * 0.20f
         val vertices = graphics.bufferSource().getBuffer(RenderType.gui())
         val pose = graphics.pose().last().pose()
 
@@ -48,11 +50,11 @@ internal class DreamParticles {
             val y = star.y * halfHeight * projection
             val exposure = speed * (1.9f + star.phase * 2.5f)
             val tailRatio = depth / (depth + exposure)
-            if (kotlin.math.abs(x * tailRatio) > halfWidth + 6f ||
-                kotlin.math.abs(y * tailRatio) > halfHeight + 6f
+            if (abs(x * tailRatio) > halfWidth + 6f ||
+                abs(y * tailRatio) > halfHeight + 6f
             ) continue
 
-            val wave = if (reducedMotion) 0.78f else
+            val wave = if (!anchored) 0f else if (reducedMotion) 0.78f else
                 (1f + sin(star.phase * TAU + skyClock * star.rate)) * 0.5f
             val flare = smoothStep(wave) * wave
             val stillGlow = 0.30f + 0.70f * flare
@@ -80,10 +82,9 @@ internal class DreamParticles {
             if (pointerX != null) {
                 val dx = headX - pointerX
                 val dy = headY - pointerY
-                val radius = minOf(width, height) * 0.20f
                 val distance = hypot(dx, dy)
-                if (distance in 0.01f..<radius) {
-                    val push = 8f * smoothStep(1f - distance / radius) * distance / (distance + 12f)
+                if (distance in 0.01f..<pointerRadius) {
+                    val push = 8f * smoothStep(1f - distance / pointerRadius) * distance / (distance + 12f)
                     headX += dx * push / distance
                     headY += dy * push / distance
                 }
