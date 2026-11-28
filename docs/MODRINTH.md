@@ -9,7 +9,7 @@ Use `requiem-cinematics` if available. Use studio-created artwork for the icon a
 ---
 
 <p align="center" style="text-align: center;">
-<img src="https://cdn.modrinth.com/data/cached_images/eac4d7f1762c6da093f5221055bdf419387a0c89.png" alt="Requiem eye-and-shards banner" width="1080">
+<img src="https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/requiem-banner.png" alt="Requiem pixel lettering beside a faceted eye and three shards in a starfield" width="1080">
 </p>
 
 <p align="center" style="text-align: center;">
