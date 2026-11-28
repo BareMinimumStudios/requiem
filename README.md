@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/requiem-banner.png" alt="Requiem pixel lettering beside a faceted eye and three shards in a starfield" width="100%">
+<img src="docs/assets/requiem-banner.png" alt="Requiem pixel lettering beside a faceted eye and three shards over in-game lightspeed trails" width="100%">
 
 **Minecraft 1.21.1 · Fabric + NeoForge · Java 21**
 
