@@ -45,3 +45,9 @@ Install the matching Requiem build on each client and on the server for multipla
 ## Links and support
 
 [Configuration and documentation](https://github.com/BareMinimumStudios/requiem/blob/main/README.md) · [Report an issue](https://github.com/BareMinimumStudios/requiem/issues/new) · [Discord](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
+
+## Sponsor
+
+[![Sponsor Banner](https://www.bisecthosting.com/partners/custom-banners/db76a74a-a111-4660-98b7-5a75c15a5951.png)](https://bisecthosting.com/bareminimum)
+
+Use code **`bareminimum`** to get **25% off your first month**!
