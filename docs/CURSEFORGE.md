@@ -16,9 +16,9 @@ Use `requiem-cinematics` if available. Use the square logo for the project icon 
 <a href="https://modrinth.com/mod/requiem-cinematics"><img src="https://img.shields.io/badge/Modrinth-133329?logo=modrinth&amp;logoColor=8CFFCF&amp;style=for-the-badge" alt="Modrinth" height="28"></a>
 <a href="https://www.curseforge.com/minecraft/mc-mods/requiem-cinematics"><img src="https://img.shields.io/badge/CurseForge-39232B?logo=curseforge&amp;logoColor=FFA880&amp;style=for-the-badge" alt="CurseForge" height="28"></a>
 <a href="https://github.com/BareMinimumStudios/requiem"><img src="https://img.shields.io/badge/Source-242B49?logo=github&amp;logoColor=EAF0FF&amp;style=for-the-badge" alt="GitHub source" height="28"></a>
-<a href="https://github.com/BareMinimumStudios/requiem/issues"><img src="https://img.shields.io/badge/Issues-242B49?style=for-the-badge" alt="Report an issue" height="28"></a>
-<a href="https://github.com/BareMinimumStudios/requiem/forks"><img src="https://img.shields.io/badge/Forks-242B49?style=for-the-badge" alt="Forks" height="28"></a>
-<a href="https://github.com/BareMinimumStudios/requiem/stargazers"><img src="https://img.shields.io/badge/Stars-242B49?style=for-the-badge" alt="Stars" height="28"></a>
+<a href="https://github.com/BareMinimumStudios/requiem/issues"><img src="https://img.shields.io/github/issues/BareMinimumStudios/requiem?style=for-the-badge&amp;labelColor=242B49&amp;color=364775" alt="Report an issue" height="28"></a>
+<a href="https://github.com/BareMinimumStudios/requiem/forks"><img src="https://img.shields.io/github/forks/BareMinimumStudios/requiem?style=for-the-badge&amp;labelColor=242B49&amp;color=364775" alt="Forks" height="28"></a>
+<a href="https://github.com/BareMinimumStudios/requiem/stargazers"><img src="https://img.shields.io/github/stars/BareMinimumStudios/requiem?style=for-the-badge&amp;labelColor=242B49&amp;color=364775" alt="Stars" height="28"></a>
 </p>
 
 <p align="center" style="text-align: center;"><strong>Minecraft 1.21.1 · Fabric + NeoForge · Java 21</strong></p>
