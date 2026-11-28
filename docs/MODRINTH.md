@@ -8,17 +8,28 @@ Use `requiem-cinematics` if available. Use studio-created artwork for the icon a
 
 ---
 
-![Requiem eye-and-shards banner](https://cdn.modrinth.com/data/cached_images/eac4d7f1762c6da093f5221055bdf419387a0c89.png)
+<p align="center" style="text-align: center;">
+<img src="https://cdn.modrinth.com/data/cached_images/eac4d7f1762c6da093f5221055bdf419387a0c89.png" alt="Requiem eye-and-shards banner" width="1080">
+</p>
 
-[![Modrinth](https://img.shields.io/badge/Modrinth-133329?logo=modrinth&logoColor=8CFFCF&style=for-the-badge)](https://modrinth.com/mod/requiem-cinematics) [![CurseForge](https://img.shields.io/badge/CurseForge-39232B?logo=curseforge&logoColor=FFA880&style=for-the-badge)](https://www.curseforge.com/minecraft/mc-mods/requiem-cinematics) [![GitHub source](https://img.shields.io/badge/Source-242B49?logo=github&logoColor=EAF0FF&style=for-the-badge)](https://github.com/BareMinimumStudios/requiem) [![Report an issue](https://img.shields.io/badge/Issues-242B49?style=for-the-badge)](https://github.com/BareMinimumStudios/requiem/issues) [![Forks](https://img.shields.io/badge/Forks-242B49?style=for-the-badge)](https://github.com/BareMinimumStudios/requiem/forks) [![Stars](https://img.shields.io/badge/Stars-242B49?style=for-the-badge)](https://github.com/BareMinimumStudios/requiem/stargazers)
+<p align="center" style="text-align: center;">
+<a href="https://modrinth.com/mod/requiem-cinematics"><img src="https://img.shields.io/badge/Modrinth-133329?logo=modrinth&amp;logoColor=8CFFCF&amp;style=for-the-badge" alt="Modrinth" height="28"></a>
+<a href="https://www.curseforge.com/minecraft/mc-mods/requiem-cinematics"><img src="https://img.shields.io/badge/CurseForge-39232B?logo=curseforge&amp;logoColor=FFA880&amp;style=for-the-badge" alt="CurseForge" height="28"></a>
+<a href="https://github.com/BareMinimumStudios/requiem"><img src="https://img.shields.io/badge/Source-242B49?logo=github&amp;logoColor=EAF0FF&amp;style=for-the-badge" alt="GitHub source" height="28"></a>
+<a href="https://github.com/BareMinimumStudios/requiem/issues"><img src="https://img.shields.io/badge/Issues-242B49?style=for-the-badge" alt="Report an issue" height="28"></a>
+<a href="https://github.com/BareMinimumStudios/requiem/forks"><img src="https://img.shields.io/badge/Forks-242B49?style=for-the-badge" alt="Forks" height="28"></a>
+<a href="https://github.com/BareMinimumStudios/requiem/stargazers"><img src="https://img.shields.io/badge/Stars-242B49?style=for-the-badge" alt="Stars" height="28"></a>
+</p>
 
-**Minecraft 1.21.1 · Fabric + NeoForge · Java 21**
+<p align="center" style="text-align: center;"><strong>Minecraft 1.21.1 · Fabric + NeoForge · Java 21</strong></p>
 
 *Where… am I?*
 
 Requiem replaces Minecraft’s death screen with **The Between**, a quiet place to decide whether to return. Choose to wake up and your last moments flicker past in reverse. The stars stretch into lightspeed, the camera eases back into first person, and the sounds of the world return.
 
-![Resurrection in Minecraft, from streaming stars to first person in the rain](https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-resurrection.gif)
+<p align="center" style="text-align: center;">
+<img src="https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-resurrection.gif" alt="Resurrection in Minecraft, from streaming stars to first person in the rain" width="1080">
+</p>
 
 ## How it works
 
@@ -31,15 +42,21 @@ Requiem replaces Minecraft’s death screen with **The Between**, a quiet place 
 
 **The Between**
 
-![The Between’s blue starfield and resurrection choices](https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-the-between.jpg)
+<p align="center" style="text-align: center;">
+<img src="https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-the-between.jpg" alt="The Between’s blue starfield and resurrection choices" width="1080">
+</p>
 
 **Lightspeed**
 
-![Starlight streaks past a fading memory during resurrection](https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-lightspeed.jpg)
+<p align="center" style="text-align: center;">
+<img src="https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-lightspeed.jpg" alt="Starlight streaks past a fading memory during resurrection" width="1080">
+</p>
 
 **Back in the world**
 
-![Minecraft first-person view in the rain after resurrection](https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-first-person.jpg)
+<p align="center" style="text-align: center;">
+<img src="https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-first-person.jpg" alt="Minecraft first-person view in the rain after resurrection" width="1080">
+</p>
 
 ## Installation
 
@@ -58,6 +75,8 @@ Install the matching Requiem build on each client and on the server for multipla
 
 ## Sponsor
 
-[![Sponsor Banner](https://www.bisecthosting.com/partners/custom-banners/db76a74a-a111-4660-98b7-5a75c15a5951.png)](https://bisecthosting.com/bareminimum)
+<p align="center" style="text-align: center;">
+<a href="https://bisecthosting.com/bareminimum"><img src="https://www.bisecthosting.com/partners/custom-banners/db76a74a-a111-4660-98b7-5a75c15a5951.png" alt="BisectHosting sponsor banner" width="1080"></a>
+</p>
 
 Use code **`bareminimum`** to get **25% off your first month**!
