@@ -6,7 +6,7 @@
 <a href="https://github.com/BareMinimumStudios/requiem"><img src="https://img.shields.io/badge/Source-242B49?logo=github&amp;logoColor=EAF0FF&amp;style=for-the-badge" alt="GitHub source" height="28"></a>
 <a href="https://github.com/BareMinimumStudios/requiem/issues"><img src="https://img.shields.io/github/issues/BareMinimumStudios/requiem?style=for-the-badge&amp;labelColor=242B49&amp;color=364775" alt="Report an issue" height="28"></a>
 <a href="https://github.com/BareMinimumStudios/requiem/forks"><img src="https://img.shields.io/github/forks/BareMinimumStudios/requiem?style=for-the-badge&amp;labelColor=242B49&amp;color=364775" alt="Forks" height="28"></a>
-<a href="https://github.com/BareMinimumStudios/requiem/stargazers"><img src="https://img.shields.io/github/stars/BareMinimumStudios/requiem?style=for-the-badge&amp;labelColor=242B49&amp;color=364775" alt="Stars" height="28"></a>
+<a href="https://github.com/BareMinimumStudios/requiem"><img src="https://img.shields.io/github/stars/BareMinimumStudios/requiem?style=for-the-badge&amp;labelColor=242B49&amp;color=364775" alt="Stars" height="28"></a>
 </p>
 
 <p align="center" style="text-align: center;"><strong>Minecraft 1.21.1 · Fabric + NeoForge · Java 21</strong></p>
