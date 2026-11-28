@@ -8,40 +8,50 @@ Use `requiem-cinematics` if available. Use the square logo for the project icon 
 
 ---
 
-![Requiem banner](https://media.forgecdn.net/attachments/2285/96/requiem-banner-png.png)
+![Requiem eye-and-shards banner](https://media.forgecdn.net/attachments/2285/96/requiem-banner-png.png)
 
-# Requiem
+[![Modrinth](https://img.shields.io/badge/Modrinth-133329?logo=modrinth&logoColor=8CFFCF&style=for-the-badge)](https://modrinth.com/mod/requiem-cinematics) [![CurseForge](https://img.shields.io/badge/CurseForge-39232B?logo=curseforge&logoColor=FFA880&style=for-the-badge)](https://www.curseforge.com/minecraft/mc-mods/requiem-cinematics) [![GitHub source](https://img.shields.io/badge/Source-242B49?logo=github&logoColor=EAF0FF&style=for-the-badge)](https://github.com/BareMinimumStudios/requiem) [![Report an issue](https://img.shields.io/badge/Issues-242B49?style=for-the-badge)](https://github.com/BareMinimumStudios/requiem/issues) [![Forks](https://img.shields.io/badge/Forks-242B49?style=for-the-badge)](https://github.com/BareMinimumStudios/requiem/forks) [![Stars](https://img.shields.io/badge/Stars-242B49?style=for-the-badge)](https://github.com/BareMinimumStudios/requiem/stargazers)
 
 **Minecraft 1.21.1 · Fabric + NeoForge · Java 21**
 
-A few stars come into focus. *Where… am I?*
+*Where… am I?*
 
-Requiem replaces Minecraft’s death screen with **The Between**, a quiet place to decide whether to return. Your last moments flicker past in reverse as the stars stretch into lightspeed. The camera eases into first person, and the sounds of the world gradually return.
+Requiem replaces Minecraft’s death screen with **The Between**, a quiet place to decide whether to return. Choose to wake up and your last moments flicker past in reverse. The stars stretch into lightspeed, the camera eases back into first person, and the sounds of the world return.
+
+![Resurrection in Minecraft, from streaming stars to first person in the rain](https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-resurrection.gif)
 
 ## How it works
 
-- **Return or decide later.** Unlimited lives are the default, and the life counter is hidden unless you enable it. Pending decisions survive reconnects and server restarts.
-- **Set the stakes for your world.** Choose Unlimited, Limited, Hardcore, or Disabled. Set exceptions by player UUID or name and pick which PvP, mob, and environmental deaths count.
-- **Choose what final death means.** After confirmation, players can enter Spectator, wait in Limbo for an operator to release them, or be banned from a dedicated server.
-- **Make the scene your own.** Adjust dialogue, colors, particles, timing, and sound. Enable a first-join cinematic or use reduced motion, standard buttons, or muted cinematics. The optional fading memories stay in client memory and are never written to disk by Requiem.
+- **Return or decide later.** Lives are unlimited by default, and the counter is hidden. A pending choice survives reconnects and server restarts.
+- **Set the stakes.** Choose Unlimited, Limited, Hardcore, or Disabled. Configure which PvP, mob, and environmental deaths count, with exceptions by player UUID or name.
+- **Choose a final outcome.** Confirm final death to enter Spectator, wait in Limbo for an operator to release you, or trigger a dedicated-server ban, depending on the server’s settings.
+- **Make The Between your own.** Adjust the dialogue, starfield, timing, and audio. Fading memories are optional and held in memory. Reduced motion, standard buttons, and muted cinematics are available.
+
+## In game
+
+**The Between**
+
+![The Between’s blue starfield and resurrection choices](https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-the-between.jpg)
+
+**Lightspeed**
+
+![Starlight streaks past a fading memory during resurrection](https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-lightspeed.jpg)
+
+**Back in the world**
+
+![Minecraft first-person view in the rain after resurrection](https://raw.githubusercontent.com/BareMinimumStudios/requiem/main/docs/assets/gameplay/requiem-first-person.jpg)
 
 ## Installation
 
-Install the matching Requiem file and dependencies on the server and each client. Singleplayer uses the same client installation.
+Install the matching Requiem build on each client and on the server for multiplayer.
 
-- **Fabric** · Fabric API, Fabric Language Kotlin, and Fzzy Config.
-- **NeoForge** · Kotlin for Forge and Fzzy Config.
+| Loader | Required dependencies |
+| --- | --- |
+| Fabric | Fabric API, Fabric Language Kotlin, Fzzy Config |
+| NeoForge | Kotlin for Forge, Fzzy Config |
 
 **Incapacitated 2.0.1** is optional. A successful revive does not spend a life. Give-up and overkill were tested on dedicated servers with both loaders.
 
-## Configuration
-
-Settings are in `config/requiem_cinematics/settings.toml`. The server controls life rules and final outcomes. Cinematic preferences are client-side. Operators can release a player from Limbo with `/requiem release <online player> <lives>`.
-
 ## Links and support
 
-- [Documentation](https://github.com/BareMinimumStudios/requiem#readme) · [Source code](https://github.com/BareMinimumStudios/requiem) · [Report an issue](https://github.com/BareMinimumStudios/requiem/issues)
-- [Bare Minimum Studios](https://github.com/BareMinimumStudios) · [Community Discord](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
-- [The Bare Minimum License v1.1](https://github.com/BareMinimumStudios/requiem/blob/HEAD/LICENSE)
-
-When reporting a bug, include your Requiem version, loader, and the relevant client or server log.
+[Configuration and documentation](https://github.com/BareMinimumStudios/requiem/blob/main/README.md) · [Report an issue](https://github.com/BareMinimumStudios/requiem/issues/new) · [Discord](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
